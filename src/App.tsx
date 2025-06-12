@@ -18,11 +18,25 @@ function App() {
   const [photonActive, setPhotonActive] = useState(false);
   const [currentPhase, setCurrentPhase] = useState<'preparing' | 'transmitting' | 'measuring' | 'complete'>('preparing');
 
-  const { state, actions } = useBB84Simulation(config);
+  const {
+    currentStep,
+    totalSteps,
+    steps,
+    sharedKey,
+    isRunning,
+    isComplete,
+    currentStepData,
+    statistics,
+    executeStep,
+    startAutoSimulation,
+    stopSimulation,
+    resetSimulation,
+    runCompleteSimulation
+  } = useBB84Simulation(config);
 
   // Controla as fases da animação
   useEffect(() => {
-    if (state.currentStepData && !state.isRunning) {
+    if (currentStepData && !isRunning) {
       setCurrentPhase('preparing');
       
       // Sequência de animação
@@ -49,7 +63,7 @@ function App() {
 
       return () => timeouts.forEach(clearTimeout);
     }
-  }, [state.currentStepData, state.isRunning]);
+  }, [currentStepData, isRunning]);
 
   const handlePhotonComplete = () => {
     setPhotonActive(false);
@@ -57,20 +71,18 @@ function App() {
   };
 
   const handleStepForward = () => {
-    if (!state.isRunning && !state.isComplete) {
-      actions.executeStep();
+    if (!isRunning && !isComplete) {
+      executeStep();
     }
   };
 
-  const currentStep = state.currentStepData;
-
   return (
-    <div className="min-h-screen bg-gray-900">
-      <header className="p-6 text-center bg-gray-800/50 backdrop-blur-sm border-b border-gray-700/50">
-        <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-quantum-blue to-quantum-purple bg-clip-text text-transparent">
+    <div className="min-h-screen bg-quantum-dark">
+      <header className="p-6 text-center bg-quantum-surface/50 backdrop-blur-sm border-b border-quantum-primary/20">
+        <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-quantum-primary via-quantum-secondary to-quantum-primary bg-clip-text text-transparent">
           Simulador do Protocolo BB84
         </h1>
-        <p className="text-gray-400">
+        <p className="text-quantum-light/70">
           Demonstração Interativa de Criptografia Quântica
         </p>
       </header>
@@ -81,14 +93,14 @@ function App() {
           <SimulationControls
             config={config}
             onConfigChange={setConfig}
-            isRunning={state.isRunning}
-            isComplete={state.isComplete}
+            isRunning={isRunning}
+            isComplete={isComplete}
             photonActive={photonActive}
             onStepForward={handleStepForward}
-            onAutoPlay={() => actions.startAutoSimulation(config.visualizationSpeed)}
-            onStop={() => actions.stopSimulation()}
-            onReset={() => actions.resetSimulation()}
-            onRunComplete={() => actions.runCompleteSimulation()}
+            onAutoPlay={() => startAutoSimulation(config.visualizationSpeed)}
+            onStop={stopSimulation}
+            onReset={resetSimulation}
+            onRunComplete={runCompleteSimulation}
           />
         </div>
 
@@ -97,9 +109,9 @@ function App() {
           {/* Alice */}
           <div className="flex justify-center">
             <Alice 
-              currentBit={currentStep?.alice.bit}
-              currentBasis={currentStep?.alice.basis}
-              polarizationAngle={currentStep?.alice.angle}
+              currentBit={currentStepData?.alice.bit}
+              currentBasis={currentStepData?.alice.basis}
+              polarizationAngle={currentStepData?.alice.angle}
               isActive={currentPhase === 'preparing'}
             />
           </div>
@@ -108,8 +120,8 @@ function App() {
           <div className="relative h-80 overflow-hidden">
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center px-4">
-                <h3 className="text-lg font-bold text-quantum-green mb-2">Canal Quântico</h3>
-                <div className="text-sm text-gray-400 max-w-[200px] mx-auto">
+                <h3 className="text-lg font-bold text-quantum-accent mb-2">Canal Quântico</h3>
+                <div className="text-quantum-light/70 max-w-[200px] mx-auto">
                   {currentPhase === 'preparing' && 'Alice preparando qubit...'}
                   {currentPhase === 'transmitting' && 'Fóton em trânsito...'}
                   {currentPhase === 'measuring' && 'Bob medindo qubit...'}
@@ -119,12 +131,12 @@ function App() {
             </div>
             
             {/* Fóton animado */}
-            {currentStep && (
+            {currentStepData && (
               <Photon 
                 isActive={photonActive}
-                polarizationAngle={currentStep.photon.polarization}
-                bit={currentStep.alice.bit}
-                basis={currentStep.alice.basis}
+                polarizationAngle={currentStepData.photon.polarization}
+                bit={currentStepData.alice.bit}
+                basis={currentStepData.alice.basis}
                 onAnimationComplete={handlePhotonComplete}
                 animationDuration={config.visualizationSpeed}
               />
@@ -134,10 +146,10 @@ function App() {
           {/* Bob */}
           <div className="flex justify-center">
             <Bob 
-              currentBasis={currentStep?.bob.basis}
-              measuredBit={currentStep?.bob.bit}
-              measurementAngle={currentStep?.bob.measurementAngle}
-              photonAngle={currentStep?.photon.polarization}
+              currentBasis={currentStepData?.bob.basis}
+              measuredBit={currentStepData?.bob.bit}
+              measurementAngle={currentStepData?.bob.measurementAngle}
+              photonAngle={currentStepData?.photon.polarization}
               isActive={currentPhase === 'measuring'}
               showResult={currentPhase === 'complete' || currentPhase === 'measuring'}
             />
@@ -145,127 +157,74 @@ function App() {
         </div>
 
         {/* Informações do Passo Atual */}
-        {currentStep && (
+        {currentStepData && (
           <div className="quantum-card mb-6">
             <h3 className="text-lg font-bold text-quantum-blue mb-4">
-              Passo {state.currentStep} de {state.totalSteps}
+              Passo {currentStep} de {totalSteps}
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="text-sm text-gray-400 mb-2">Alice envia</div>
                 <div className="font-mono text-lg">
-                  Bit: <span style={{ color: currentStep.alice.bit === 0 ? '#00ff88' : '#ff6b6b' }}>
-                    {currentStep.alice.bit}
+                  Bit: <span style={{ color: currentStepData.alice.bit === 0 ? '#00ff88' : '#ff6b6b' }}>
+                    {currentStepData.alice.bit}
                   </span>
                 </div>
                 <div className="font-mono text-sm">
-                  Base: <span style={{ color: currentStep.alice.basis === 'computational' ? '#00d4ff' : '#9d4edd' }}>
-                    {currentStep.alice.basis === 'computational' ? 'Z' : 'X'}
+                  Base: <span style={{ color: currentStepData.alice.basis === 'computational' ? '#00d4ff' : '#9d4edd' }}>
+                    {currentStepData.alice.basis === 'computational' ? 'Z' : 'X'}
                   </span>
                 </div>
                 <div className="text-xs text-gray-400">
-                  Polarização: {currentStep.alice.angle}°
+                  Polarização: {currentStepData.alice.angle}°
                 </div>
               </div>
 
               <div className="text-center">
                 <div className="text-sm text-gray-400 mb-2">Resultado</div>
                 <div className={`text-lg font-bold ${
-                  currentStep.result.basesMatch ? 'text-green-400' : 'text-red-400'
+                  currentStepData.result.basesMatch ? 'text-green-400' : 'text-red-400'
                 }`}>
-                  {currentStep.result.basesMatch ? '✓ Bases Iguais' : '✗ Bases Diferentes'}
+                  {currentStepData.result.basesMatch ? '✓ Bases Iguais' : '✗ Bases Diferentes'}
                 </div>
                 <div className="text-sm text-gray-400">
-                  {currentStep.result.willKeep ? 'Bit será mantido' : 'Bit será descartado'}
+                  {currentStepData.result.willKeep ? 'Bit será mantido' : 'Bit será descartado'}
                 </div>
               </div>
 
               <div className="text-center">
                 <div className="text-sm text-gray-400 mb-2">Bob mede</div>
                 <div className="font-mono text-lg">
-                  Bit: <span style={{ color: currentStep.bob.bit === 0 ? '#00ff88' : '#ff6b6b' }}>
-                    {currentStep.bob.bit}
+                  Bit: <span style={{ color: currentStepData.bob.bit === 0 ? '#00ff88' : '#ff6b6b' }}>
+                    {currentStepData.bob.bit}
                   </span>
                 </div>
                 <div className="font-mono text-sm">
-                  Base: <span style={{ color: currentStep.bob.basis === 'computational' ? '#00d4ff' : '#9d4edd' }}>
-                    {currentStep.bob.basis === 'computational' ? 'Z' : 'X'}
+                  Base: <span style={{ color: currentStepData.bob.basis === 'computational' ? '#00d4ff' : '#9d4edd' }}>
+                    {currentStepData.bob.basis === 'computational' ? 'Z' : 'X'}
                   </span>
                 </div>
                 <div className="text-xs text-gray-400">
-                  Detector: {currentStep.bob.measurementAngle}°
+                  Detector: {currentStepData.bob.measurementAngle}°
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Estatísticas e Chave Gerada */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="quantum-card">
-            <h3 className="text-lg font-bold text-quantum-blue mb-4">Estatísticas</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Bits transmitidos:</span>
-                <span className="text-quantum-green">{state.statistics.totalBits}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Bases compatíveis:</span>
-                <span className="text-quantum-blue">{state.statistics.matchingBases}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Taxa de erro:</span>
-                <span className={state.statistics.errorRate > 0.11 ? 'text-red-400' : 'text-green-400'}>
-                  {(state.statistics.errorRate * 100).toFixed(1)}%
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Eficiência da chave:</span>
-                <span className="text-quantum-purple">{(state.statistics.keyEfficiency * 100).toFixed(1)}%</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="quantum-card">
-            <h3 className="text-lg font-bold text-quantum-blue mb-4">
-              Chave Compartilhada ({state.sharedKey.length}/{config.keyLength})
-            </h3>
-            <div className="bg-gray-800/50 p-4 rounded-lg">
-              <div className="font-mono text-quantum-green break-all text-lg">
-                {state.sharedKey.join('') || 'Nenhuma chave gerada ainda...'}
-              </div>
-              {state.isComplete && (
-                <p className="text-sm text-gray-400 mt-2">
-                  ✓ Chave criptográfica segura gerada com sucesso!
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Histórico das Etapas */}
-        <div className="mb-6">
+        {/* Histórico de Passos */}
+        <div className="quantum-card">
+          <h3 className="text-lg font-bold text-quantum-blue mb-4">
+            Histórico da Simulação
+          </h3>
           <StepHistory 
-            steps={state.steps}
-            currentStep={state.currentStep}
+            steps={steps}
+            currentStep={currentStep}
+            sharedKey={sharedKey}
+            statistics={statistics}
           />
         </div>
-
-        {/* Eavesdropper Warning */}
-        {config.eavesdropperPresent && (
-          <div className="quantum-card mt-6 border-red-500/50 bg-red-900/20">
-            <h3 className="text-lg font-bold text-red-400 mb-2">
-              ⚠️ Eavesdropper Detectado
-            </h3>
-            <p className="text-red-300 text-sm">
-              Um espião (Eve) está interceptando o canal! Taxa de erro elevada: {(config.errorRate * 100).toFixed(0)}%
-            </p>
-            <p className="text-red-300 text-xs mt-1">
-              Em um sistema real, Alice e Bob detectariam esta interferência e abortariam a transmissão.
-            </p>
-          </div>
-        )}
       </main>
     </div>
   );

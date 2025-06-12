@@ -1,4 +1,3 @@
-
 import { TMeasurementBasis } from '@/types';
 
 interface IAliceProps {
@@ -16,33 +15,33 @@ const Alice: React.FC<IAliceProps> = ({
 }) => {
   // Cores para diferentes estados
   const getBasisColor = (basis?: TMeasurementBasis) => {
-    if (!basis) return '#64748b';
-    return basis === 'computational' ? '#00d4ff' : '#9d4edd';
+    if (!basis) return '#6366f1';
+    return basis === 'computational' ? '#6366f1' : '#3b82f6';
   };
 
   const getBitColor = (bit?: 0 | 1) => {
-    if (bit === undefined) return '#64748b';
-    return bit === 0 ? '#00ff88' : '#ff6b6b';
+    if (bit === undefined) return '#6366f1';
+    return bit === 0 ? '#34d399' : '#f87171';
   };
 
   return (
     <div className="flex flex-col items-center space-y-4">
       {/* Nome */}
-      <h3 className="text-xl font-bold text-quantum-blue">Alice</h3>
+      <h3 className="text-xl font-bold text-quantum-primary">Alice</h3>
       
       {/* Avatar */}
       <div className={`relative w-20 h-20 rounded-full border-4 transition-all duration-300 ${
         isActive 
-          ? 'border-quantum-blue shadow-quantum animate-pulse' 
-          : 'border-gray-600'
+          ? 'border-quantum-primary shadow-quantum animate-pulse' 
+          : 'border-quantum-surface'
       }`}>
-        <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+        <div className="w-full h-full rounded-full bg-quantum-primary flex items-center justify-center">
           <span className="text-2xl">👩‍🔬</span>
         </div>
         
         {/* Indicador de atividade */}
         {isActive && (
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-quantum-green rounded-full animate-ping"></div>
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-quantum-accent rounded-full animate-ping"></div>
         )}
       </div>
 

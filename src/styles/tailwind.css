@@ -4,61 +4,61 @@
 
 @layer base {
   body {
-    @apply bg-gray-900 text-gray-100;
+    @apply bg-quantum-dark text-quantum-light;
   }
 }
 
 @layer components {
   .quantum-button {
     @apply px-6 py-3 rounded-lg
-           bg-gradient-to-r from-quantum-blue to-quantum-purple
-           text-white font-medium
+           bg-quantum-primary
+           text-quantum-light font-medium
            shadow-quantum
-           hover:shadow-quantum-lg
+           hover:bg-quantum-primary/90 hover:shadow-quantum-lg
            active:scale-95
            transition-all duration-300
-           focus:outline-none focus:ring-2 focus:ring-quantum-blue;
+           focus:outline-none focus:ring-2 focus:ring-quantum-primary/50;
   }
 
   .quantum-card {
     @apply p-6 rounded-xl
-           bg-gray-800/50 backdrop-blur-sm
-           border border-gray-700/50
+           bg-quantum-surface/50 backdrop-blur-sm
+           border border-quantum-surface
            shadow-quantum
-           hover:shadow-quantum-lg
+           hover:border-quantum-primary/20
            transition-all duration-300;
   }
 
   .quantum-container {
     @apply w-full max-w-4xl mx-auto
            p-6 rounded-2xl
-           bg-gray-900/80 backdrop-blur-md
-           border border-gray-700/50
+           bg-quantum-surface/80 backdrop-blur-md
+           border border-quantum-surface
            shadow-quantum-xl
            grid grid-cols-1 md:grid-cols-2 gap-6;
   }
 
   .qubit {
     @apply w-16 h-16 rounded-full
-           bg-gradient-to-br from-quantum-blue to-quantum-purple
+           bg-quantum-primary
            shadow-quantum
            flex items-center justify-center
-           text-white font-bold
+           text-quantum-light font-bold
            transition-all duration-300
-           hover:scale-110;
+           hover:scale-105;
   }
 
   .measurement-basis {
     @apply px-4 py-2 rounded-md
-           bg-gray-800 border border-gray-700
+           bg-quantum-surface border border-quantum-surface
            text-sm font-mono
            flex items-center gap-2;
   }
 
   .quantum-state {
     @apply p-4 rounded-lg
-           bg-gray-900/50 backdrop-blur-sm
-           border border-gray-700/50
-           text-quantum-blue font-mono;
+           bg-quantum-dark/50 backdrop-blur-sm
+           border border-quantum-surface
+           text-quantum-accent font-mono;
   }
 } 

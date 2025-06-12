@@ -1,4 +1,3 @@
-
 import { TMeasurementBasis } from '@/types';
 
 interface IBobProps {
@@ -20,13 +19,13 @@ const Bob: React.FC<IBobProps> = ({
 }) => {
   // Cores para diferentes estados
   const getBasisColor = (basis?: TMeasurementBasis) => {
-    if (!basis) return '#64748b';
-    return basis === 'computational' ? '#00d4ff' : '#9d4edd';
+    if (!basis) return '#6366f1';
+    return basis === 'computational' ? '#6366f1' : '#3b82f6';
   };
 
   const getBitColor = (bit?: 0 | 1) => {
-    if (bit === undefined) return '#64748b';
-    return bit === 0 ? '#00ff88' : '#ff6b6b';
+    if (bit === undefined) return '#6366f1';
+    return bit === 0 ? '#34d399' : '#f87171';
   };
 
   // Calcula se a medição foi bem-sucedida (bases iguais)
@@ -39,21 +38,21 @@ const Bob: React.FC<IBobProps> = ({
   return (
     <div className="flex flex-col items-center space-y-4">
       {/* Nome */}
-      <h3 className="text-xl font-bold text-quantum-purple">Bob</h3>
+      <h3 className="text-xl font-bold text-quantum-secondary">Bob</h3>
       
       {/* Avatar */}
       <div className={`relative w-20 h-20 rounded-full border-4 transition-all duration-300 ${
         isActive 
-          ? 'border-quantum-purple shadow-quantum animate-pulse' 
-          : 'border-gray-600'
+          ? 'border-quantum-secondary shadow-quantum animate-pulse' 
+          : 'border-quantum-surface'
       }`}>
-        <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
+        <div className="w-full h-full rounded-full bg-quantum-secondary flex items-center justify-center">
           <span className="text-2xl">👨‍🔬</span>
         </div>
         
         {/* Indicador de atividade */}
         {isActive && (
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-quantum-purple rounded-full animate-ping"></div>
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-quantum-accent rounded-full animate-ping"></div>
         )}
       </div>
 
@@ -129,8 +128,8 @@ const Bob: React.FC<IBobProps> = ({
               <div className="mt-2">
                 <div className={`text-xs px-2 py-1 rounded ${
                   isSuccessfulMeasurement() 
-                    ? 'bg-green-900 text-green-300' 
-                    : 'bg-red-900 text-red-300'
+                    ? 'bg-quantum-success/20 text-quantum-success' 
+                    : 'bg-quantum-error/20 text-quantum-error'
                 }`}>
                   {isSuccessfulMeasurement() ? '✓ Bases compatíveis' : '✗ Bases diferentes'}
                 </div>

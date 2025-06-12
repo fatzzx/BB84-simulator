@@ -16,27 +16,15 @@ const Photon: React.FC<IPhotonProps> = ({
   bit,
   basis,
   onAnimationComplete,
-  animationDuration = 2000
+  animationDuration = 1000
 }) => {
   const [position, setPosition] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
 
-  // Cores baseadas no bit e base
+  // Função para obter a cor do fóton
   const getPhotonColor = () => {
-    if (basis === 'computational') {
-      return bit === 0 ? '#00d4ff' : '#00d4ff';
-    } else {
-      return bit === 0 ? '#9d4edd' : '#9d4edd';
-    }
-  };
-
-  // Símbolo do fóton baseado no estado
-  const getPhotonSymbol = () => {
-    if (basis === 'computational') {
-      return bit === 0 ? '⟶' : '⟶';
-    } else {
-      return bit === 0 ? '⤴' : '⤵';
-    }
+    if (!isActive) return '#6366f1';
+    return basis === 'computational' ? '#6366f1' : '#3b82f6';
   };
 
   useEffect(() => {
@@ -73,7 +61,7 @@ const Photon: React.FC<IPhotonProps> = ({
   return (
     <div className="absolute inset-0 pointer-events-none">
       {/* Canal quântico */}
-      <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-gray-600 via-quantum-green to-gray-600 opacity-30 transform -translate-y-1/2"></div>
+      <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-quantum-surface via-quantum-accent to-quantum-surface opacity-30 transform -translate-y-1/2"></div>
       
       {/* Fóton viajante */}
       <div 

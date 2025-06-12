@@ -6,6 +6,7 @@ import {
   ISimulationConfig 
 } from '@/types';
 import { QUANTUM_STATES } from '@/constants/quantum';
+import { secureRandom, randomBit, randomBasis } from '@/utils/quantum';
 
 export class BB84Simulator {
   private config: ISimulationConfig;
@@ -14,14 +15,14 @@ export class BB84Simulator {
     this.config = config;
   }
 
-  // Gera bit aleatório
+  // Gera bit aleatório usando a função segura
   private generateRandomBit(): 0 | 1 {
-    return Math.random() < 0.5 ? 0 : 1;
+    return randomBit();
   }
 
-  // Gera base aleatória
+  // Gera base aleatória usando a função segura
   private generateRandomBasis(): TMeasurementBasis {
-    return Math.random() < 0.5 ? 'computational' : 'hadamard';
+    return randomBasis();
   }
 
   // Alice prepara um qubit no estado apropriado
@@ -58,8 +59,8 @@ export class BB84Simulator {
       measuredBit = this.generateRandomBit();
     }
 
-    // Simula eavesdropping introduzindo erro
-    if (this.config.eavesdropperPresent && Math.random() < this.config.errorRate) {
+    // Simula eavesdropping introduzindo erro usando secureRandom
+    if (this.config.eavesdropperPresent && secureRandom() < this.config.errorRate) {
       measuredBit = measuredBit === 0 ? 1 : 0;
     }
 
@@ -152,21 +153,35 @@ export class BB84Simulator {
       }
     };
 
+    // Determina o ângulo de medição de Bob aleatoriamente dentro da base escolhida
+    const getBobMeasurementAngle = (basis: TMeasurementBasis): number => {
+      if (basis === 'computational') {
+        // Escolhe aleatoriamente entre 0° e 90° para a base computacional
+        return randomBit() === 0 ? 0 : 90;
+      } else {
+        // Escolhe aleatoriamente entre 45° e 135° para a base Hadamard
+        return randomBit() === 0 ? 45 : 135;
+      }
+    };
+
+    const aliceAngle = getAngle(aliceBit, aliceBasis);
+    const bobMeasurementAngle = getBobMeasurementAngle(bobBasis);
+
     return {
       step,
       alice: {
         bit: aliceBit,
         basis: aliceBasis,
-        angle: getAngle(aliceBit, aliceBasis)
+        angle: aliceAngle
       },
       bob: {
         bit: measurement.bit,
         basis: bobBasis,
-        angle: getAngle(aliceBit, aliceBasis), // Mantém ângulo original do fóton
-        measurementAngle: bobBasis === 'computational' ? 0 : 45
+        angle: aliceAngle, // Mantém ângulo original do fóton
+        measurementAngle: bobMeasurementAngle // Agora usa o ângulo específico escolhido
       },
       photon: {
-        polarization: getAngle(aliceBit, aliceBasis),
+        polarization: aliceAngle,
         state: qubit.state
       },
       result: {

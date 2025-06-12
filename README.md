@@ -199,3 +199,16 @@ Transformamos o projeto de uma **interface puramente visual e estática** em uma
 ✅ **Educação é o foco** com explicações visuais dos conceitos quânticos  
 
 *De um protótipo visual para uma ferramenta educacional completa! 🚀* 
+
+## 📄 Licença
+
+Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+A licença MIT permite que você:
+- ✅ Use o código comercialmente
+- ✅ Modifique o código
+- ✅ Distribua o código
+- ✅ Use o código privadamente
+- ✅ Sublicencie o código
+
+A única exigência é incluir a nota de copyright e a licença em qualquer cópia do software/código. 
