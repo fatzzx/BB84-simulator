@@ -3,6 +3,7 @@ import Alice from '@/components/Alice';
 import Bob from '@/components/Bob';
 import Photon from '@/components/Photon';
 import SimulationControls from '@/components/SimulationControls';
+import StepHistory from '@/components/StepHistory';
 import { useBB84Simulation } from '@/hooks/useBB84Simulation';
 import { ISimulationConfig } from '@/types';
 
@@ -104,11 +105,11 @@ function App() {
           </div>
 
           {/* Canal Quântico */}
-          <div className="relative h-80">
+          <div className="relative h-80 overflow-hidden">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
+              <div className="text-center px-4">
                 <h3 className="text-lg font-bold text-quantum-green mb-2">Canal Quântico</h3>
-                <div className="text-sm text-gray-400">
+                <div className="text-sm text-gray-400 max-w-[200px] mx-auto">
                   {currentPhase === 'preparing' && 'Alice preparando qubit...'}
                   {currentPhase === 'transmitting' && 'Fóton em trânsito...'}
                   {currentPhase === 'measuring' && 'Bob medindo qubit...'}
@@ -147,7 +148,7 @@ function App() {
         {currentStep && (
           <div className="quantum-card mb-6">
             <h3 className="text-lg font-bold text-quantum-blue mb-4">
-              Passo {state.currentStep} de {Math.ceil(config.keyLength * 2.5)}
+              Passo {state.currentStep} de {state.totalSteps}
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -201,7 +202,7 @@ function App() {
         )}
 
         {/* Estatísticas e Chave Gerada */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="quantum-card">
             <h3 className="text-lg font-bold text-quantum-blue mb-4">Estatísticas</h3>
             <div className="space-y-2">
@@ -241,6 +242,14 @@ function App() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Histórico das Etapas */}
+        <div className="mb-6">
+          <StepHistory 
+            steps={state.steps}
+            currentStep={state.currentStep}
+          />
         </div>
 
         {/* Eavesdropper Warning */}

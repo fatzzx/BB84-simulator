@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { BB84Simulator } from '@/simulation/bb84';
 import { TMeasurementBasis, ISimulationConfig } from '@/types';
 
@@ -48,7 +48,7 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
   
   const [state, setState] = useState<ISimulationState>({
     currentStep: 0,
-    totalSteps: config.keyLength * 2.5, // Estimativa para compensar descarte
+    totalSteps: config.keyLength * 3, // Estimativa mais realista para compensar descarte
     steps: [],
     sharedKey: [],
     isRunning: false,
@@ -62,6 +62,14 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
     }
   });
 
+  // Atualiza totalSteps quando a configuração mudar
+  useEffect(() => {
+    setState(prev => ({
+      ...prev,
+      totalSteps: config.keyLength * 3
+    }));
+  }, [config.keyLength]);
+
   // Gera um bit aleatório
   const generateRandomBit = (): 0 | 1 => Math.random() < 0.5 ? 0 : 1;
   
@@ -71,7 +79,9 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
 
   // Executa um passo da simulação
   const executeStep = useCallback(() => {
+    // Verificações de parada usando o estado atual
     if (state.isComplete || state.sharedKey.length >= config.keyLength) {
+      setState(prev => ({ ...prev, isComplete: true }));
       return;
     }
 
@@ -100,8 +110,7 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
     const errorRate = matchingBases > 0 ? errors / matchingBases : 0;
     const keyEfficiency = totalBits > 0 ? newSharedKey.length / totalBits : 0;
 
-    const isComplete = newSharedKey.length >= config.keyLength || 
-                      state.currentStep >= state.totalSteps - 1;
+    const isComplete = newSharedKey.length >= config.keyLength;
 
     setState(prev => ({
       ...prev,
@@ -110,6 +119,8 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
       sharedKey: newSharedKey,
       currentStepData: stepData,
       isComplete,
+      // Atualiza totalSteps dinamicamente baseado no progresso
+      totalSteps: isComplete ? newSteps.length : Math.max(prev.totalSteps, newSteps.length + Math.ceil((config.keyLength - newSharedKey.length) * 2.5)),
       statistics: {
         totalBits,
         matchingBases,
@@ -125,16 +136,23 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
   const startAutoSimulation = useCallback((speed: number = 1000) => {
     setState(prev => ({ ...prev, isRunning: true }));
     
-    const interval = setInterval(() => {
-      const step = executeStep();
-      if (!step || state.isComplete || state.sharedKey.length >= config.keyLength) {
-        clearInterval(interval);
-        setState(prev => ({ ...prev, isRunning: false }));
-      }
-    }, speed);
-
+    const runStep = () => {
+      setState(currentState => {
+        // Verifica se deve parar a simulação
+        if (currentState.isComplete || currentState.sharedKey.length >= config.keyLength) {
+          return { ...currentState, isRunning: false, isComplete: true };
+        }
+        
+        return currentState;
+      });
+      
+      // Executa o passo usando a função atual
+      executeStep();
+    };
+    
+    const interval = setInterval(runStep, speed);
     return () => clearInterval(interval);
-  }, [executeStep, state.isComplete, state.sharedKey.length, config.keyLength]);
+  }, [executeStep, config.keyLength]);
 
   // Para a simulação
   const stopSimulation = useCallback(() => {
@@ -146,7 +164,7 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
     simulatorRef.current = new BB84Simulator(config);
     setState({
       currentStep: 0,
-      totalSteps: config.keyLength * 2.5,
+      totalSteps: config.keyLength * 3,
       steps: [],
       sharedKey: [],
       isRunning: false,

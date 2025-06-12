@@ -48,9 +48,9 @@ const Alice: React.FC<IAliceProps> = ({
 
       {/* Informações do bit atual */}
       {currentBit !== undefined && (
-        <div className="quantum-card !p-3 min-w-[200px]">
+        <div className="quantum-card !p-3 w-full max-w-[240px] overflow-hidden">
           <div className="text-center space-y-2">
-            <div className="text-sm text-gray-400">Preparando qubit</div>
+            <div className="text-sm text-gray-400 truncate">Preparando qubit</div>
             
             {/* Bit value */}
             <div className="flex items-center justify-center space-x-2">
@@ -115,7 +115,7 @@ const Alice: React.FC<IAliceProps> = ({
       )}
 
       {/* Base selector visual */}
-      <div className="quantum-card !p-3">
+      <div className="quantum-card !p-3 w-full max-w-[240px]">
         <div className="text-center">
           <div className="text-sm text-gray-400 mb-2">Bases disponíveis</div>
           <div className="flex space-x-4">

@@ -59,9 +59,9 @@ const Bob: React.FC<IBobProps> = ({
 
       {/* Informações da medição atual */}
       {currentBasis && (
-        <div className="quantum-card !p-3 min-w-[200px]">
+        <div className="quantum-card !p-3 w-full max-w-[240px] overflow-hidden">
           <div className="text-center space-y-2">
-            <div className="text-sm text-gray-400">Medindo qubit</div>
+            <div className="text-sm text-gray-400 truncate">Medindo qubit</div>
             
             {/* Base de medição */}
             <div className="flex items-center justify-center space-x-2">
@@ -141,7 +141,7 @@ const Bob: React.FC<IBobProps> = ({
       )}
 
       {/* Base selector visual */}
-      <div className="quantum-card !p-3">
+      <div className="quantum-card !p-3 w-full max-w-[240px]">
         <div className="text-center">
           <div className="text-sm text-gray-400 mb-2">Detectores disponíveis</div>
           <div className="flex space-x-4">
@@ -174,7 +174,7 @@ const Bob: React.FC<IBobProps> = ({
 
       {/* Estatísticas */}
       {showResult && (
-        <div className="quantum-card !p-2">
+        <div className="quantum-card !p-2 w-full max-w-[240px]">
           <div className="text-center">
             <div className="text-xs text-gray-400">Estado medido</div>
             <div className="text-quantum-purple font-mono text-sm">

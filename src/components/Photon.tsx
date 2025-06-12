@@ -158,35 +158,33 @@ const Photon: React.FC<IPhotonProps> = ({
         </div>
       )}
       
-      {/* Informações do fóton */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
-        <div className="quantum-card !p-2 min-w-[150px]">
-          <div className="text-center">
-            <div className="text-xs text-gray-400 mb-1">Fóton em trânsito</div>
-            <div className="flex justify-between text-xs">
-              <span>Estado:</span>
-              <span style={{ color: getPhotonColor() }}>
-                {basis === 'computational' 
-                  ? (bit === 0 ? '|0⟩' : '|1⟩')
-                  : (bit === 0 ? '|+⟩' : '|-⟩')
-                }
-              </span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span>Base:</span>
-              <span style={{ color: getPhotonColor() }}>
-                {basis === 'computational' ? 'Z' : 'X'}
-              </span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span>Polarização:</span>
-              <span style={{ color: getPhotonColor() }}>
-                {polarizationAngle}°
-              </span>
+      {/* Informações do fóton - só mostra no meio da animação */}
+      {position > 20 && position < 80 && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="quantum-card !p-2 max-w-[140px] overflow-hidden">
+            <div className="text-center">
+              <div className="text-xs text-gray-400 mb-1 truncate">Fóton</div>
+              <div className="grid grid-cols-2 gap-1 text-xs">
+                <div className="text-gray-300 truncate">Estado:</div>
+                <div style={{ color: getPhotonColor() }} className="truncate">
+                  {basis === 'computational' 
+                    ? (bit === 0 ? '|0⟩' : '|1⟩')
+                    : (bit === 0 ? '|+⟩' : '|-⟩')
+                  }
+                </div>
+                <div className="text-gray-300 truncate">Base:</div>
+                <div style={{ color: getPhotonColor() }} className="truncate">
+                  {basis === 'computational' ? 'Z' : 'X'}
+                </div>
+                <div className="text-gray-300 truncate">Pol:</div>
+                <div style={{ color: getPhotonColor() }} className="truncate">
+                  {polarizationAngle}°
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
