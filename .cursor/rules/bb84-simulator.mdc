@@ -1,0 +1,95 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Simulador do Protocolo BB84 - Regras e Boas Práticas
+
+## Estrutura do Projeto
+
+### Organização de Arquivos
+- `/src/components`: Componentes React reutilizáveis
+- `/src/simulation`: Lógica de simulação do protocolo BB84
+- `/src/utils`: Funções utilitárias e helpers
+- `/src/types`: Definições de tipos TypeScript
+- `/src/hooks`: Custom hooks React
+- `/src/constants`: Constantes e configurações
+- `/src/styles`: Arquivos de estilo (CSS/SCSS)
+- `/tests`: Testes unitários e de integração
+
+### Convenções de Código
+
+#### Nomenclatura
+- Use PascalCase para componentes React
+- Use camelCase para funções, variáveis e métodos
+- Use UPPER_SNAKE_CASE para constantes
+- Prefixe interfaces com 'I' (ex: IQuantumState)
+- Prefixe tipos com 'T' (ex: TMeasurementResult)
+
+#### Componentes React
+- Mantenha componentes pequenos e focados em uma única responsabilidade
+- Use TypeScript para todos os componentes
+- Implemente PropTypes ou interfaces TypeScript para props
+- Separe a lógica de negócio dos componentes usando custom hooks
+
+#### Simulação Quântica
+- Implemente operações quânticas como funções puras
+- Documente claramente as transformações quânticas
+- Use matrizes para representar estados quânticos
+- Implemente validações para garantir a unitariedade das operações
+
+#### Performance
+- Use memoização para cálculos pesados
+- Implemente lazy loading para componentes grandes
+- Otimize renderizações usando React.memo quando apropriado
+- Use Web Workers para cálculos intensivos
+
+#### Testes
+- Mantenha cobertura de testes acima de 80%
+- Teste casos de borda para operações quânticas
+- Implemente testes visuais para a interface do usuário
+- Use mocks para simular operações quânticas em testes
+
+#### Acessibilidade
+- Implemente suporte a ARIA labels
+- Garanta contraste adequado de cores
+- Forneça alternativas textuais para elementos visuais
+- Suporte navegação por teclado
+
+#### Documentação
+- Documente todas as funções quânticas
+- Mantenha um README atualizado
+- Documente decisões de arquitetura importantes
+- Inclua exemplos de uso para componentes complexos
+
+## Regras Específicas do BB84
+
+### Estados Quânticos
+- Implemente os estados |0⟩, |1⟩, |+⟩ e |-⟩ como constantes
+- Valide estados quânticos antes de operações
+- Documente claramente as bases de medição
+
+### Medições
+- Implemente medições em ambas as bases (computacional e Hadamard)
+- Registre e valide resultados de medição
+- Implemente visualização clara dos resultados
+
+### Segurança
+- Implemente geração segura de chaves
+- Valide a detecção de eavesdropping
+- Documente vulnerabilidades conhecidas
+
+### Interface do Usuário
+- Forneça feedback visual claro para estados quânticos
+- Implemente visualizações interativas
+- Mantenha a interface intuitiva e educativa
+
+## Próximos Passos Recomendados
+
+1. Configurar ambiente de desenvolvimento
+2. Implementar estrutura básica do projeto
+3. Desenvolver componentes core de visualização quântica
+4. Implementar simulação básica do BB84
+5. Adicionar testes e documentação
+6. Refinar interface do usuário
+7. Implementar recursos avançados
