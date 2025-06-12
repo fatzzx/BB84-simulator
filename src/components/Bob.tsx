@@ -69,7 +69,7 @@ const Bob: React.FC<IBobProps> = ({
                 className="font-mono text-sm font-semibold px-2 py-1 rounded"
                 style={{ color: getBasisColor(currentBasis) }}
               >
-                {currentBasis === 'computational' ? 'Z (⊞)' : 'X (⊡)'}
+                {currentBasis === 'computational' ? 'Z (+)' : 'X (×)'}
               </span>
             </div>
 
@@ -139,34 +139,26 @@ const Bob: React.FC<IBobProps> = ({
         </div>
       )}
 
-      {/* Base selector visual */}
-      <div className="quantum-card !p-3 w-full max-w-[240px]">
-        <div className="text-center">
-          <div className="text-sm text-gray-400 mb-2">Detectores disponíveis</div>
-          <div className="flex space-x-4">
-            {/* Base computacional */}
-            <div className="text-center">
-              <div className={`w-8 h-8 mx-auto mb-1 border-2 rounded ${
-                currentBasis === 'computational' ? 'border-quantum-blue' : 'border-gray-600'
-              }`}>
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-quantum-blue text-lg">⊞</span>
-                </div>
-              </div>
-              <div className="text-xs text-gray-400">Z (0°/90°)</div>
+      {/* Detectores disponíveis */}
+      <div className="mt-6">
+        <div className="text-sm text-gray-400 mb-3 text-center">Detectores disponíveis</div>
+        <div className="flex justify-center space-x-4">
+          {/* Detector Base Computacional (Z) */}
+          <div className="text-center">
+            <div className="w-12 h-12 rounded-lg bg-quantum-surface border border-quantum-blue/30 flex items-center justify-center">
+              <span className="text-quantum-blue text-lg">+</span>
             </div>
-            
-            {/* Base Hadamard */}
-            <div className="text-center">
-              <div className={`w-8 h-8 mx-auto mb-1 border-2 rounded ${
-                currentBasis === 'hadamard' ? 'border-quantum-purple' : 'border-gray-600'
-              }`}>
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-quantum-purple text-lg">⊡</span>
-                </div>
-              </div>
-              <div className="text-xs text-gray-400">X (45°/135°)</div>
+            <div className="text-xs text-gray-400 mt-1">Base Z</div>
+            <div className="text-xs text-quantum-blue">0°, 90°</div>
+          </div>
+          
+          {/* Detector Base Hadamard (X) */}
+          <div className="text-center">
+            <div className="w-12 h-12 rounded-lg bg-quantum-surface border border-quantum-purple/30 flex items-center justify-center">
+              <span className="text-quantum-purple text-lg">×</span>
             </div>
+            <div className="text-xs text-gray-400 mt-1">Base X</div>
+            <div className="text-xs text-quantum-purple">45°, 135°</div>
           </div>
         </div>
       </div>

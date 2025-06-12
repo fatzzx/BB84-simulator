@@ -106,7 +106,7 @@ const Photon: React.FC<IPhotonProps> = ({
           />
           
           {/* Estado quântico label */}
-          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+          <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
             <div 
               className="text-xs font-mono px-2 py-1 rounded-full"
               style={{ 
@@ -123,7 +123,7 @@ const Photon: React.FC<IPhotonProps> = ({
           </div>
           
           {/* Polarização info */}
-          <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+          <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
             <div 
               className="text-xs px-2 py-1 rounded-full"
               style={{ 

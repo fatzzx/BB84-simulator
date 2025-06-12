@@ -4,6 +4,7 @@ import Bob from '@/components/Bob';
 import Photon from '@/components/Photon';
 import SimulationControls from '@/components/SimulationControls';
 import StepHistory from '@/components/StepHistory';
+import { Footer } from '@/components';
 import { useBB84Simulation } from '@/hooks/useBB84Simulation';
 import { ISimulationConfig } from '@/types';
 
@@ -77,7 +78,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-quantum-dark">
+    <div className="min-h-screen bg-quantum-dark flex flex-col">
       <header className="p-6 text-center bg-quantum-surface/50 backdrop-blur-sm border-b border-quantum-primary/20">
         <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-quantum-primary via-quantum-secondary to-quantum-primary bg-clip-text text-transparent">
           Simulador do Protocolo BB84
@@ -87,7 +88,7 @@ function App() {
         </p>
       </header>
       
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-4 py-6 flex-grow">
         {/* Painel de Controle */}
         <div className="mb-6">
           <SimulationControls
@@ -226,6 +227,8 @@ function App() {
           />
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }
