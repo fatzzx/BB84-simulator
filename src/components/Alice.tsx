@@ -1,3 +1,4 @@
+import React from 'react';
 import { TMeasurementBasis } from '@/types';
 
 interface IAliceProps {
@@ -140,4 +141,4 @@ const Alice: React.FC<IAliceProps> = ({
   );
 };
 
-export default Alice; 
+export default React.memo(Alice); 

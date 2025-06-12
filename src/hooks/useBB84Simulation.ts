@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useReducer, useCallback, useRef, useEffect } from 'react';
 import { BB84Simulator } from '@/simulation/bb84';
 import { TMeasurementBasis, ISimulationConfig } from '@/types';
 
@@ -43,13 +43,108 @@ export interface ISimulationState {
   };
 }
 
+// Actions para o reducer
+type SimulationAction =
+  | { type: 'START_SIMULATION'; speed: number }
+  | { type: 'STOP_SIMULATION' }
+  | { type: 'RESET_SIMULATION'; config: ISimulationConfig }
+  | { type: 'EXECUTE_STEP'; stepData: ISimulationStep }
+  | { type: 'COMPLETE_SIMULATION'; result: any }
+  | { type: 'UPDATE_TOTAL_STEPS'; totalSteps: number };
+
+// Reducer para gerenciar estado de forma consistente
+const simulationReducer = (state: ISimulationState, action: SimulationAction): ISimulationState => {
+  switch (action.type) {
+    case 'START_SIMULATION':
+      return { ...state, isRunning: true };
+
+    case 'STOP_SIMULATION':
+      return { ...state, isRunning: false };
+
+    case 'RESET_SIMULATION':
+      return {
+        currentStep: 0,
+        // Estimativa mais precisa: ~4x o tamanho da chave para protocolo BB84 real
+        totalSteps: Math.ceil(action.config.keyLength * 4),
+        steps: [],
+        sharedKey: [],
+        isRunning: false,
+        isComplete: false,
+        currentStepData: null,
+        statistics: {
+          totalBits: 0,
+          matchingBases: 0,
+          errorRate: 0,
+          keyEfficiency: 0
+        }
+      };
+
+    case 'EXECUTE_STEP': {
+      const newSteps = [...state.steps, action.stepData];
+      const newSharedKey = action.stepData.result.basesMatch 
+        ? [...state.sharedKey, action.stepData.alice.bit]
+        : state.sharedKey;
+
+      // Calcula estatísticas
+      const totalBits = newSteps.length;
+      const matchingBases = newSteps.filter(s => s.result.basesMatch).length;
+      const errors = newSteps.filter(s => 
+        s.result.basesMatch && s.alice.bit !== s.bob.bit
+      ).length;
+      const errorRate = matchingBases > 0 ? errors / matchingBases : 0;
+      const keyEfficiency = totalBits > 0 ? newSharedKey.length / totalBits : 0;
+
+      const isComplete = newSharedKey.length >= state.totalSteps / 4; // keyLength alvo
+
+      return {
+        ...state,
+        currentStep: state.currentStep + 1,
+        steps: newSteps,
+        sharedKey: newSharedKey,
+        currentStepData: action.stepData,
+        isComplete,
+        isRunning: isComplete ? false : state.isRunning,
+        statistics: {
+          totalBits,
+          matchingBases,
+          errorRate,
+          keyEfficiency
+        }
+      };
+    }
+
+    case 'COMPLETE_SIMULATION':
+      return {
+        ...state,
+        sharedKey: action.result.sharedKey,
+        isComplete: true,
+        isRunning: false,
+        statistics: {
+          totalBits: action.result.aliceBits.length,
+          matchingBases: action.result.aliceBits.filter((_: any, i: number) => 
+            action.result.aliceBases[i] === action.result.bobBases[i]
+          ).length,
+          errorRate: action.result.errorRate,
+          keyEfficiency: action.result.sharedKey.length / action.result.aliceBits.length
+        }
+      };
+
+    case 'UPDATE_TOTAL_STEPS':
+      return { ...state, totalSteps: action.totalSteps };
+
+    default:
+      return state;
+  }
+};
+
 export const useBB84Simulation = (config: ISimulationConfig) => {
   const simulatorRef = useRef(new BB84Simulator(config));
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const speedRef = useRef<number>(1000);
   
-  const [state, setState] = useState<ISimulationState>({
+  const [state, dispatch] = useReducer(simulationReducer, {
     currentStep: 0,
-    totalSteps: config.keyLength * 3, // Estimativa mais realista para compensar descarte
+    totalSteps: Math.ceil(config.keyLength * 4), // Estimativa mais realista
     steps: [],
     sharedKey: [],
     isRunning: false,
@@ -63,13 +158,20 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
     }
   });
 
-  // Atualiza totalSteps quando a configuração mudar
+  // Limpa intervalos na desmontagem
   useEffect(() => {
-    setState(prev => ({
-      ...prev,
-      totalSteps: config.keyLength * 3
-    }));
-  }, [config.keyLength]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
+  // Atualiza simulador quando config muda
+  useEffect(() => {
+    simulatorRef.current = new BB84Simulator(config);
+    dispatch({ type: 'RESET_SIMULATION', config });
+  }, [config]);
 
   // Gera um bit aleatório
   const generateRandomBit = (): 0 | 1 => Math.random() < 0.5 ? 0 : 1;
@@ -80,71 +182,43 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
 
   // Executa um passo da simulação
   const executeStep = useCallback(() => {
-    setState(prevState => {
-      // Verificações de parada usando o estado atual
-      if (prevState.isComplete || prevState.sharedKey.length >= config.keyLength) {
-        return { ...prevState, isComplete: true, isRunning: false };
-      }
+    // Evita execução se já completo
+    if (state.isComplete || state.sharedKey.length >= config.keyLength) {
+      dispatch({ type: 'STOP_SIMULATION' });
+      return;
+    }
 
-      const aliceBit = generateRandomBit();
-      const aliceBasis = generateRandomBasis();
-      const bobBasis = generateRandomBasis();
+    const aliceBit = generateRandomBit();
+    const aliceBasis = generateRandomBasis();
+    const bobBasis = generateRandomBasis();
 
-      const stepData = simulatorRef.current.simulateStep(
-        prevState.currentStep,
-        aliceBit,
-        aliceBasis,
-        bobBasis
-      );
+    const stepData = simulatorRef.current.simulateStep(
+      state.currentStep,
+      aliceBit,
+      aliceBasis,
+      bobBasis
+    );
 
-      const newSteps = [...prevState.steps, stepData];
-      const newSharedKey = stepData.result.basesMatch 
-        ? [...prevState.sharedKey, aliceBit]
-        : prevState.sharedKey;
+    dispatch({ type: 'EXECUTE_STEP', stepData });
+  }, [state.isComplete, state.sharedKey.length, state.currentStep, config.keyLength]);
 
-      // Calcula estatísticas
-      const totalBits = newSteps.length;
-      const matchingBases = newSteps.filter(s => s.result.basesMatch).length;
-      const errors = newSteps.filter(s => 
-        s.result.basesMatch && s.alice.bit !== s.bob.bit
-      ).length;
-      const errorRate = matchingBases > 0 ? errors / matchingBases : 0;
-      const keyEfficiency = totalBits > 0 ? newSharedKey.length / totalBits : 0;
-
-      const isComplete = newSharedKey.length >= config.keyLength;
-
-      return {
-        ...prevState,
-        currentStep: prevState.currentStep + 1,
-        steps: newSteps,
-        sharedKey: newSharedKey,
-        currentStepData: stepData,
-        isComplete,
-        // Atualiza totalSteps dinamicamente baseado no progresso
-        totalSteps: isComplete ? newSteps.length : Math.max(prevState.totalSteps, newSteps.length + Math.ceil((config.keyLength - newSharedKey.length) * 2.5)),
-        statistics: {
-          totalBits,
-          matchingBases,
-          errorRate,
-          keyEfficiency
-        }
-      };
-    });
-  }, [config.keyLength]);
-
-  // Controla a simulação automática usando useEffect
+  // Controla a simulação automática
   useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null;
-
     if (state.isRunning && !state.isComplete) {
-      intervalId = setInterval(() => {
+      intervalRef.current = setInterval(() => {
         executeStep();
       }, speedRef.current);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     }
 
     return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
   }, [state.isRunning, state.isComplete, executeStep]);
@@ -152,52 +226,39 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
   // Inicia simulação automática
   const startAutoSimulation = useCallback((speed: number = 1000) => {
     speedRef.current = speed;
-    setState(prev => ({ ...prev, isRunning: true }));
+    dispatch({ type: 'START_SIMULATION', speed });
   }, []);
 
   // Para a simulação
   const stopSimulation = useCallback(() => {
-    setState(prev => ({ ...prev, isRunning: false }));
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    dispatch({ type: 'STOP_SIMULATION' });
   }, []);
 
   // Reseta a simulação
   const resetSimulation = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     simulatorRef.current = new BB84Simulator(config);
-    setState({
-      currentStep: 0,
-      totalSteps: config.keyLength * 3,
-      steps: [],
-      sharedKey: [],
-      isRunning: false,
-      isComplete: false,
-      currentStepData: null,
-      statistics: {
-        totalBits: 0,
-        matchingBases: 0,
-        errorRate: 0,
-        keyEfficiency: 0
-      }
-    });
+    dispatch({ type: 'RESET_SIMULATION', config });
   }, [config]);
 
   // Executa simulação completa instantaneamente
   const runCompleteSimulation = useCallback(() => {
-    const result = simulatorRef.current.simulate();
-    
-    setState(prev => ({
-      ...prev,
-      sharedKey: result.sharedKey,
-      isComplete: true,
-      statistics: {
-        totalBits: result.aliceBits.length,
-        matchingBases: result.aliceBits.filter((_, i) => 
-          result.aliceBases[i] === result.bobBases[i]
-        ).length,
-        errorRate: result.errorRate,
-        keyEfficiency: result.sharedKey.length / result.aliceBits.length
-      }
-    }));
+    // Para qualquer simulação em andamento
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
 
+    const result = simulatorRef.current.simulate();
+    dispatch({ type: 'COMPLETE_SIMULATION', result });
+    
     return result;
   }, []);
 

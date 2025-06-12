@@ -1,0 +1,128 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Guia de Tratamento de Prompts Grandes
+
+## Estrutura Recomendada para Prompts
+
+### 1. Contexto Inicial
+- Inicie com uma breve descrição do objetivo principal
+- Defina claramente o escopo do que precisa ser feito
+- Especifique o formato de resposta esperado
+
+### 2. Requisitos Técnicos
+- Liste as tecnologias e frameworks necessários
+- Especifique versões mínimas requeridas
+- Indique restrições de compatibilidade
+
+### 3. Funcionalidades Principais
+- Divida em seções menores e numeradas
+- Priorize as funcionalidades (must-have vs nice-to-have)
+- Inclua exemplos de uso quando relevante
+
+### 4. Considerações de Arquitetura
+- Padrões de design a serem seguidos
+- Estrutura de diretórios recomendada
+- Convenções de nomenclatura
+
+### 5. Requisitos Não-Funcionais
+- Performance esperada
+- Segurança necessária
+- Escalabilidade requerida
+
+## Boas Práticas
+
+1. **Modularização**
+   - Divida prompts grandes em seções lógicas
+   - Use marcadores e numeração para melhor organização
+   - Mantenha cada seção focada em um aspecto específico
+
+2. **Clareza**
+   - Use linguagem técnica precisa
+   - Evite ambiguidades
+   - Forneça exemplos concretos
+
+3. **Priorização**
+   - Identifique requisitos críticos
+   - Separe funcionalidades essenciais das opcionais
+   - Indique dependências entre requisitos
+
+4. **Validação**
+   - Inclua critérios de aceitação
+   - Defina métricas de sucesso
+   - Especifique casos de teste principais
+
+## Exemplo de Estrutura
+
+```markdown
+# Título do Projeto
+
+## Objetivo
+[Descrição clara e concisa do objetivo]
+
+## Requisitos Técnicos
+- Tecnologia 1 (versão X)
+- Tecnologia 2 (versão Y)
+- Restrições: [lista de restrições]
+
+## Funcionalidades
+1. Funcionalidade Principal
+   - Sub-requisito 1
+   - Sub-requisito 2
+   - Exemplo de uso
+
+2. Funcionalidade Secundária
+   - Sub-requisito 1
+   - Sub-requisito 2
+
+## Arquitetura
+- Padrão de Design: [nome do padrão]
+- Estrutura de Diretórios:
+  ```
+  /src
+    /components
+    /services
+    /utils
+  ```
+
+## Critérios de Aceitação
+- [ ] Critério 1
+- [ ] Critério 2
+- [ ] Critério 3
+```
+
+## Dicas para Prompts Efetivos
+
+1. **Seja Específico**
+   - Evite termos vagos
+   - Forneça exemplos concretos
+   - Defina limites claros
+
+2. **Mantenha o Foco**
+   - Uma ideia principal por seção
+   - Evite tangentes desnecessárias
+   - Priorize informações relevantes
+
+3. **Use Formatação**
+   - Títulos e subtítulos
+   - Listas numeradas e com marcadores
+   - Blocos de código quando apropriado
+
+4. **Inclua Contexto**
+   - Background do projeto
+   - Restrições existentes
+   - Dependências conhecidas
+
+## Checklist de Validação
+
+Antes de submeter um prompt grande, verifique se:
+
+- [ ] O objetivo está claramente definido
+- [ ] Os requisitos estão bem estruturados
+- [ ] As prioridades estão estabelecidas
+- [ ] Os exemplos são relevantes
+- [ ] A formatação está clara
+- [ ] O contexto é suficiente
+- [ ] As restrições estão explícitas

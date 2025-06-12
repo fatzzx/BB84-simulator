@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useReducer } from 'react';
 import Alice from '@/components/Alice';
 import Bob from '@/components/Bob';
 import Photon from '@/components/Photon';
@@ -8,6 +8,36 @@ import { Footer } from '@/components';
 import { useBB84Simulation } from '@/hooks/useBB84Simulation';
 import { ISimulationConfig } from '@/types';
 
+// Tipos para o gerenciamento de fases
+type AnimationPhase = 'preparing' | 'transmitting' | 'measuring' | 'complete';
+
+interface AnimationState {
+  currentPhase: AnimationPhase;
+  photonActive: boolean;
+}
+
+type AnimationAction =
+  | { type: 'SET_PHASE'; phase: AnimationPhase }
+  | { type: 'ACTIVATE_PHOTON' }
+  | { type: 'DEACTIVATE_PHOTON' }
+  | { type: 'RESET_ANIMATION' };
+
+// Reducer para gerenciar as fases da animação
+const animationReducer = (state: AnimationState, action: AnimationAction): AnimationState => {
+  switch (action.type) {
+    case 'SET_PHASE':
+      return { ...state, currentPhase: action.phase };
+    case 'ACTIVATE_PHOTON':
+      return { ...state, photonActive: true };
+    case 'DEACTIVATE_PHOTON':
+      return { ...state, photonActive: false };
+    case 'RESET_ANIMATION':
+      return { currentPhase: 'preparing', photonActive: false };
+    default:
+      return state;
+  }
+};
+
 function App() {
   const [config, setConfig] = useState<ISimulationConfig>({
     keyLength: 10,
@@ -16,8 +46,10 @@ function App() {
     visualizationSpeed: 1500
   });
 
-  const [photonActive, setPhotonActive] = useState(false);
-  const [currentPhase, setCurrentPhase] = useState<'preparing' | 'transmitting' | 'measuring' | 'complete'>('preparing');
+  const [animationState, dispatchAnimation] = useReducer(animationReducer, {
+    currentPhase: 'preparing',
+    photonActive: false
+  });
 
   const {
     currentStep,
@@ -35,40 +67,38 @@ function App() {
     runCompleteSimulation
   } = useBB84Simulation(config);
 
-  // Controla as fases da animação
+  // Controla as fases da animação de forma mais robusta
   useEffect(() => {
     if (currentStepData && !isRunning) {
-      setCurrentPhase('preparing');
+      dispatchAnimation({ type: 'SET_PHASE', phase: 'preparing' });
       
-      // Sequência de animação
-      const sequence = [
-        { phase: 'preparing', delay: 500 },
-        { phase: 'transmitting', delay: 2000 },
-        { phase: 'measuring', delay: 500 },
-        { phase: 'complete', delay: 1000 }
-      ];
+      // Sequência de animação usando timeouts encadeados
+      const timeouts: NodeJS.Timeout[] = [];
 
-      let timeouts: NodeJS.Timeout[] = [];
-      let totalDelay = 0;
+      // Fase 1: Preparação (500ms)
+      timeouts.push(setTimeout(() => {
+        dispatchAnimation({ type: 'SET_PHASE', phase: 'transmitting' });
+        dispatchAnimation({ type: 'ACTIVATE_PHOTON' });
+      }, 500));
 
-      sequence.forEach(({ phase, delay }) => {
-        totalDelay += delay;
-        const timeout = setTimeout(() => {
-          setCurrentPhase(phase as any);
-          if (phase === 'transmitting') {
-            setPhotonActive(true);
-          }
-        }, totalDelay);
-        timeouts.push(timeout);
-      });
+      // Fase 2: Transmissão (duração configurável)
+      timeouts.push(setTimeout(() => {
+        dispatchAnimation({ type: 'DEACTIVATE_PHOTON' });
+        dispatchAnimation({ type: 'SET_PHASE', phase: 'measuring' });
+      }, 500 + config.visualizationSpeed));
+
+      // Fase 3: Medição (500ms)
+      timeouts.push(setTimeout(() => {
+        dispatchAnimation({ type: 'SET_PHASE', phase: 'complete' });
+      }, 1000 + config.visualizationSpeed));
 
       return () => timeouts.forEach(clearTimeout);
     }
-  }, [currentStepData, isRunning]);
+  }, [currentStepData, isRunning, config.visualizationSpeed]);
 
   const handlePhotonComplete = () => {
-    setPhotonActive(false);
-    setCurrentPhase('measuring');
+    dispatchAnimation({ type: 'DEACTIVATE_PHOTON' });
+    dispatchAnimation({ type: 'SET_PHASE', phase: 'measuring' });
   };
 
   const handleStepForward = () => {
@@ -96,7 +126,7 @@ function App() {
             onConfigChange={setConfig}
             isRunning={isRunning}
             isComplete={isComplete}
-            photonActive={photonActive}
+            photonActive={animationState.photonActive}
             onStepForward={handleStepForward}
             onAutoPlay={() => startAutoSimulation(config.visualizationSpeed)}
             onStop={stopSimulation}
@@ -113,7 +143,7 @@ function App() {
               currentBit={currentStepData?.alice.bit}
               currentBasis={currentStepData?.alice.basis}
               polarizationAngle={currentStepData?.alice.angle}
-              isActive={currentPhase === 'preparing'}
+              isActive={animationState.currentPhase === 'preparing'}
             />
           </div>
 
@@ -123,10 +153,10 @@ function App() {
               <div className="text-center px-4">
                 <h3 className="text-lg font-bold text-quantum-accent mb-2">Canal Quântico</h3>
                 <div className="text-quantum-light/70 max-w-[200px] mx-auto">
-                  {currentPhase === 'preparing' && 'Alice preparando qubit...'}
-                  {currentPhase === 'transmitting' && 'Fóton em trânsito...'}
-                  {currentPhase === 'measuring' && 'Bob medindo qubit...'}
-                  {currentPhase === 'complete' && 'Medição completa!'}
+                  {animationState.currentPhase === 'preparing' && 'Alice preparando qubit...'}
+                  {animationState.currentPhase === 'transmitting' && 'Fóton em trânsito...'}
+                  {animationState.currentPhase === 'measuring' && 'Bob medindo qubit...'}
+                  {animationState.currentPhase === 'complete' && 'Medição completa!'}
                 </div>
               </div>
             </div>
@@ -134,7 +164,7 @@ function App() {
             {/* Fóton animado */}
             {currentStepData && (
               <Photon 
-                isActive={photonActive}
+                isActive={animationState.photonActive}
                 polarizationAngle={currentStepData.photon.polarization}
                 bit={currentStepData.alice.bit}
                 basis={currentStepData.alice.basis}
@@ -151,8 +181,9 @@ function App() {
               measuredBit={currentStepData?.bob.bit}
               measurementAngle={currentStepData?.bob.measurementAngle}
               photonAngle={currentStepData?.photon.polarization}
-              isActive={currentPhase === 'measuring'}
-              showResult={currentPhase === 'complete' || currentPhase === 'measuring'}
+              isActive={animationState.currentPhase === 'measuring'}
+              showResult={animationState.currentPhase === 'complete' || animationState.currentPhase === 'measuring'}
+              basesMatch={currentStepData?.result.basesMatch}
             />
           </div>
         </div>

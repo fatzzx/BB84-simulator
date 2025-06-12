@@ -1,3 +1,4 @@
+import React from 'react';
 import { TMeasurementBasis } from '@/types';
 
 interface IBobProps {
@@ -7,6 +8,7 @@ interface IBobProps {
   photonAngle?: number;
   isActive?: boolean;
   showResult?: boolean;
+  basesMatch?: boolean;
 }
 
 const Bob: React.FC<IBobProps> = ({ 
@@ -15,7 +17,8 @@ const Bob: React.FC<IBobProps> = ({
   measurementAngle = 0,
   photonAngle = 0,
   isActive = false,
-  showResult = false
+  showResult = false,
+  basesMatch = false
 }) => {
   // Cores para diferentes estados
   const getBasisColor = (basis?: TMeasurementBasis) => {
@@ -26,13 +29,6 @@ const Bob: React.FC<IBobProps> = ({
   const getBitColor = (bit?: 0 | 1) => {
     if (bit === undefined) return '#6366f1';
     return bit === 0 ? '#34d399' : '#f87171';
-  };
-
-  // Calcula se a medição foi bem-sucedida (bases iguais)
-  const isSuccessfulMeasurement = () => {
-    // Simplificado: considera sucesso se os ângulos estão próximos
-    const angleDiff = Math.abs(photonAngle - measurementAngle);
-    return angleDiff < 22.5 || angleDiff > 157.5;
   };
 
   return (
@@ -123,15 +119,21 @@ const Bob: React.FC<IBobProps> = ({
               </div>
             </div>
 
-            {/* Indicador de sucesso */}
+            {/* Indicador de sucesso - Usando o resultado correto do protocolo BB84 */}
             {showResult && (
               <div className="mt-2">
                 <div className={`text-xs px-2 py-1 rounded ${
-                  isSuccessfulMeasurement() 
+                  basesMatch 
                     ? 'bg-quantum-success/20 text-quantum-success' 
                     : 'bg-quantum-error/20 text-quantum-error'
                 }`}>
-                  {isSuccessfulMeasurement() ? '✓ Bases compatíveis' : '✗ Bases diferentes'}
+                  {basesMatch ? '✓ Bases iguais' : '✗ Bases diferentes'}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  {basesMatch 
+                    ? 'Bit será mantido na chave' 
+                    : 'Bit será descartado'
+                  }
                 </div>
               </div>
             )}
@@ -181,4 +183,4 @@ const Bob: React.FC<IBobProps> = ({
   );
 };
 
-export default Bob; 
+export default React.memo(Bob); 

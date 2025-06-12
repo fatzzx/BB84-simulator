@@ -42,25 +42,49 @@ export class BB84Simulator {
     };
   }
 
+  // Simula interceptação de Eve (Eavesdropper)
+  private simulateEavesdropping(qubit: IQuantumBit): IQuantumBit {
+    if (!this.config.eavesdropperPresent) {
+      return qubit;
+    }
+
+    // Eve escolhe uma base aleatória para interceptar
+    const eveBasis = this.generateRandomBasis();
+    
+    // Eve mede o qubit, colapsando o estado
+    let eveMeasurement: 0 | 1;
+    
+    if (qubit.preparationBasis === eveBasis) {
+      // Se Eve escolheu a mesma base que Alice, ela obtém o bit correto
+      eveMeasurement = qubit.bitValue;
+    } else {
+      // Se as bases diferem, resultado é aleatório (50/50)
+      eveMeasurement = this.generateRandomBit();
+    }
+
+    // Eve prepara um novo qubit baseado na sua medição e envia para Bob
+    return this.prepareQubit(eveMeasurement, eveBasis);
+  }
+
   // Bob mede o qubit na base escolhida
   private measureQubit(qubit: IQuantumBit, measurementBasis: TMeasurementBasis): IMeasurementResult {
-    const { state, preparationBasis } = qubit;
+    const { preparationBasis } = qubit;
     
     let probability: number;
     let measuredBit: 0 | 1;
 
     if (preparationBasis === measurementBasis) {
-      // Bases iguais - resultado determinístico
+      // Bases iguais - resultado determinístico (sem ruído quântico)
       probability = 1;
       measuredBit = qubit.bitValue;
     } else {
-      // Bases diferentes - resultado aleatório (50/50)
+      // Bases diferentes - resultado aleatório (50/50) devido à mecânica quântica
       probability = 0.5;
       measuredBit = this.generateRandomBit();
     }
 
-    // Simula eavesdropping introduzindo erro usando secureRandom
-    if (this.config.eavesdropperPresent && secureRandom() < this.config.errorRate) {
+    // Aplica ruído do canal (se configurado)
+    if (this.config.errorRate > 0 && secureRandom() < this.config.errorRate) {
       measuredBit = measuredBit === 0 ? 1 : 0;
     }
 
@@ -79,21 +103,26 @@ export class BB84Simulator {
     const bobMeasurements: number[] = [];
     const sharedKey: number[] = [];
 
-    // Gera sequência inicial mais longa para compensar descarte
-    const initialLength = Math.ceil(this.config.keyLength * 2.5);
+    // Estima o número de bits necessários considerando:
+    // - 50% das bases coincidem em média
+    // - Margem de segurança de 25% para variabilidade estatística
+    const estimatedBitsNeeded = Math.ceil(this.config.keyLength / 0.5 * 1.25);
 
-    for (let i = 0; i < initialLength; i++) {
+    for (let i = 0; i < estimatedBitsNeeded && sharedKey.length < this.config.keyLength; i++) {
       // 1. Alice gera bit e base aleatórios
       const aliceBit = this.generateRandomBit();
       const aliceBasis = this.generateRandomBasis();
       
       // 2. Alice prepara o qubit
-      const qubit = this.prepareQubit(aliceBit, aliceBasis);
+      let qubit = this.prepareQubit(aliceBit, aliceBasis);
       
-      // 3. Bob escolhe base aleatória para medição
+      // 3. Simula interceptação de Eve (se presente)
+      qubit = this.simulateEavesdropping(qubit);
+      
+      // 4. Bob escolhe base aleatória para medição
       const bobBasis = this.generateRandomBasis();
       
-      // 4. Bob mede o qubit
+      // 5. Bob mede o qubit
       const measurement = this.measureQubit(qubit, bobBasis);
       
       aliceBits.push(aliceBit);
@@ -101,8 +130,8 @@ export class BB84Simulator {
       bobBases.push(bobBasis);
       bobMeasurements.push(measurement.bit);
       
-      // 5. Mantém apenas bits onde as bases coincidem
-      if (aliceBasis === bobBasis && sharedKey.length < this.config.keyLength) {
+      // 6. Mantém apenas bits onde as bases de Alice e Bob coincidem
+      if (aliceBasis === bobBasis) {
         sharedKey.push(aliceBit);
       }
     }
@@ -136,12 +165,16 @@ export class BB84Simulator {
   // Simula um passo individual (para visualização passo-a-passo)
   public simulateStep(step: number, aliceBit: 0 | 1, aliceBasis: TMeasurementBasis, bobBasis: TMeasurementBasis) {
     // Prepara o qubit
-    const qubit = this.prepareQubit(aliceBit, aliceBasis);
+    let qubit = this.prepareQubit(aliceBit, aliceBasis);
+    
+    // Simula interceptação (se habilitada)
+    const originalQubit = { ...qubit };
+    qubit = this.simulateEavesdropping(qubit);
     
     // Bob mede
     const measurement = this.measureQubit(qubit, bobBasis);
     
-    // Determina se as bases coincidem
+    // Determina se as bases de Alice e Bob coincidem
     const basesMatch = aliceBasis === bobBasis;
     
     // Calcula o ângulo de polarização para visualização
@@ -153,19 +186,22 @@ export class BB84Simulator {
       }
     };
 
-    // Determina o ângulo de medição de Bob aleatoriamente dentro da base escolhida
+    // Determina o ângulo de medição de Bob baseado na sua base
     const getBobMeasurementAngle = (basis: TMeasurementBasis): number => {
       if (basis === 'computational') {
-        // Escolhe aleatoriamente entre 0° e 90° para a base computacional
+        // Para base computacional, escolhe entre 0° e 90°
         return randomBit() === 0 ? 0 : 90;
       } else {
-        // Escolhe aleatoriamente entre 45° e 135° para a base Hadamard
+        // Para base Hadamard, escolhe entre 45° e 135°
         return randomBit() === 0 ? 45 : 135;
       }
     };
 
     const aliceAngle = getAngle(aliceBit, aliceBasis);
     const bobMeasurementAngle = getBobMeasurementAngle(bobBasis);
+
+    // O ângulo do fóton pode ter mudado se Eve interceptou
+    const photonAngle = getAngle(qubit.bitValue, qubit.preparationBasis);
 
     return {
       step,
@@ -177,16 +213,16 @@ export class BB84Simulator {
       bob: {
         bit: measurement.bit,
         basis: bobBasis,
-        angle: aliceAngle, // Mantém ângulo original do fóton
-        measurementAngle: bobMeasurementAngle // Agora usa o ângulo específico escolhido
+        angle: photonAngle, // Ângulo do fóton que Bob recebe
+        measurementAngle: bobMeasurementAngle
       },
       photon: {
-        polarization: aliceAngle,
+        polarization: photonAngle,
         state: qubit.state
       },
       result: {
         basesMatch,
-        bitPreserved: basesMatch,
+        bitPreserved: basesMatch && (aliceBit === measurement.bit),
         measurement: measurement.bit,
         willKeep: basesMatch
       }
