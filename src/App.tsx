@@ -1,15 +1,15 @@
-import { useState, useEffect, useReducer } from 'react';
-import Alice from '@/components/Alice';
-import Bob from '@/components/Bob';
-import Photon from '@/components/Photon';
-import SimulationControls from '@/components/SimulationControls';
-import StepHistory from '@/components/StepHistory';
-import { Footer } from '@/components';
-import { useBB84Simulation } from '@/hooks/useBB84Simulation';
-import { ISimulationConfig } from '@/types';
+import { useState, useEffect, useReducer } from "react";
+import Alice from "@/components/Alice";
+import Bob from "@/components/Bob";
+import Photon from "@/components/Photon";
+import SimulationControls from "@/components/SimulationControls";
+import StepHistory from "@/components/StepHistory";
+import { Footer } from "@/components";
+import { useBB84Simulation } from "@/hooks/useBB84Simulation";
+import { ISimulationConfig } from "@/types";
 
 // Tipos para o gerenciamento de fases
-type AnimationPhase = 'preparing' | 'transmitting' | 'measuring' | 'complete';
+type AnimationPhase = "preparing" | "transmitting" | "measuring" | "complete";
 
 interface AnimationState {
   currentPhase: AnimationPhase;
@@ -17,22 +17,25 @@ interface AnimationState {
 }
 
 type AnimationAction =
-  | { type: 'SET_PHASE'; phase: AnimationPhase }
-  | { type: 'ACTIVATE_PHOTON' }
-  | { type: 'DEACTIVATE_PHOTON' }
-  | { type: 'RESET_ANIMATION' };
+  | { type: "SET_PHASE"; phase: AnimationPhase }
+  | { type: "ACTIVATE_PHOTON" }
+  | { type: "DEACTIVATE_PHOTON" }
+  | { type: "RESET_ANIMATION" };
 
 // Reducer para gerenciar as fases da animação
-const animationReducer = (state: AnimationState, action: AnimationAction): AnimationState => {
+const animationReducer = (
+  state: AnimationState,
+  action: AnimationAction
+): AnimationState => {
   switch (action.type) {
-    case 'SET_PHASE':
+    case "SET_PHASE":
       return { ...state, currentPhase: action.phase };
-    case 'ACTIVATE_PHOTON':
+    case "ACTIVATE_PHOTON":
       return { ...state, photonActive: true };
-    case 'DEACTIVATE_PHOTON':
+    case "DEACTIVATE_PHOTON":
       return { ...state, photonActive: false };
-    case 'RESET_ANIMATION':
-      return { currentPhase: 'preparing', photonActive: false };
+    case "RESET_ANIMATION":
+      return { currentPhase: "preparing", photonActive: false };
     default:
       return state;
   }
@@ -43,12 +46,12 @@ function App() {
     keyLength: 10,
     errorRate: 0,
     eavesdropperPresent: false,
-    visualizationSpeed: 1500
+    visualizationSpeed: 1500,
   });
 
   const [animationState, dispatchAnimation] = useReducer(animationReducer, {
-    currentPhase: 'preparing',
-    photonActive: false
+    currentPhase: "preparing",
+    photonActive: false,
   });
 
   const {
@@ -64,47 +67,58 @@ function App() {
     startAutoSimulation,
     stopSimulation,
     resetSimulation,
-    runCompleteSimulation
+    runCompleteSimulation,
   } = useBB84Simulation(config);
 
   // Controla as fases da animação de forma mais robusta
   useEffect(() => {
     if (currentStepData && !isRunning) {
-      dispatchAnimation({ type: 'SET_PHASE', phase: 'preparing' });
-      
+      dispatchAnimation({ type: "SET_PHASE", phase: "preparing" });
+
       // Sequência de animação usando timeouts encadeados
       const timeouts: NodeJS.Timeout[] = [];
 
       // Fase 1: Preparação (500ms)
-      timeouts.push(setTimeout(() => {
-        dispatchAnimation({ type: 'SET_PHASE', phase: 'transmitting' });
-        dispatchAnimation({ type: 'ACTIVATE_PHOTON' });
-      }, 500));
+      timeouts.push(
+        setTimeout(() => {
+          dispatchAnimation({ type: "SET_PHASE", phase: "transmitting" });
+          dispatchAnimation({ type: "ACTIVATE_PHOTON" });
+        }, 500)
+      );
 
       // Fase 2: Transmissão (duração configurável)
-      timeouts.push(setTimeout(() => {
-        dispatchAnimation({ type: 'DEACTIVATE_PHOTON' });
-        dispatchAnimation({ type: 'SET_PHASE', phase: 'measuring' });
-      }, 500 + config.visualizationSpeed));
+      timeouts.push(
+        setTimeout(() => {
+          dispatchAnimation({ type: "DEACTIVATE_PHOTON" });
+          dispatchAnimation({ type: "SET_PHASE", phase: "measuring" });
+        }, 500 + config.visualizationSpeed)
+      );
 
       // Fase 3: Medição (500ms)
-      timeouts.push(setTimeout(() => {
-        dispatchAnimation({ type: 'SET_PHASE', phase: 'complete' });
-      }, 1000 + config.visualizationSpeed));
+      timeouts.push(
+        setTimeout(() => {
+          dispatchAnimation({ type: "SET_PHASE", phase: "complete" });
+        }, 1000 + config.visualizationSpeed)
+      );
 
       return () => timeouts.forEach(clearTimeout);
     }
   }, [currentStepData, isRunning, config.visualizationSpeed]);
 
   const handlePhotonComplete = () => {
-    dispatchAnimation({ type: 'DEACTIVATE_PHOTON' });
-    dispatchAnimation({ type: 'SET_PHASE', phase: 'measuring' });
+    dispatchAnimation({ type: "DEACTIVATE_PHOTON" });
+    dispatchAnimation({ type: "SET_PHASE", phase: "measuring" });
   };
 
   const handleStepForward = () => {
     if (!isRunning && !isComplete) {
       executeStep();
     }
+  };
+
+  // Cores neutras para os bits
+  const getBitColor = (bit: 0 | 1) => {
+    return bit === 0 ? "#0ea5e9" : "#8b5cf6"; // Azul claro e roxo claro - cores neutras
   };
 
   return (
@@ -117,7 +131,7 @@ function App() {
           Demonstração Interativa de Criptografia Quântica
         </p>
       </header>
-      
+
       <main className="container mx-auto px-4 py-6 flex-grow">
         {/* Painel de Controle */}
         <div className="mb-6">
@@ -136,34 +150,22 @@ function App() {
         </div>
 
         {/* Área Principal de Simulação */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           {/* Alice */}
           <div className="flex justify-center">
-            <Alice 
+            <Alice
               currentBit={currentStepData?.alice.bit}
               currentBasis={currentStepData?.alice.basis}
               polarizationAngle={currentStepData?.alice.angle}
-              isActive={animationState.currentPhase === 'preparing'}
+              isActive={animationState.currentPhase === "preparing"}
             />
           </div>
 
-          {/* Canal Quântico */}
-          <div className="relative h-80 overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center px-4">
-                <h3 className="text-lg font-bold text-quantum-accent mb-2">Canal Quântico</h3>
-                <div className="text-quantum-light/70 max-w-[200px] mx-auto">
-                  {animationState.currentPhase === 'preparing' && 'Alice preparando qubit...'}
-                  {animationState.currentPhase === 'transmitting' && 'Fóton em trânsito...'}
-                  {animationState.currentPhase === 'measuring' && 'Bob medindo qubit...'}
-                  {animationState.currentPhase === 'complete' && 'Medição completa!'}
-                </div>
-              </div>
-            </div>
-            
+          {/* Canal Quântico - Área para conexão direta */}
+          <div className="relative h-[480px] overflow-hidden flex items-center">
             {/* Fóton animado */}
             {currentStepData && (
-              <Photon 
+              <Photon
                 isActive={animationState.photonActive}
                 polarizationAngle={currentStepData.photon.polarization}
                 bit={currentStepData.alice.bit}
@@ -176,13 +178,16 @@ function App() {
 
           {/* Bob */}
           <div className="flex justify-center">
-            <Bob 
+            <Bob
               currentBasis={currentStepData?.bob.basis}
               measuredBit={currentStepData?.bob.bit}
               measurementAngle={currentStepData?.bob.measurementAngle}
               photonAngle={currentStepData?.photon.polarization}
-              isActive={animationState.currentPhase === 'measuring'}
-              showResult={animationState.currentPhase === 'complete' || animationState.currentPhase === 'measuring'}
+              isActive={animationState.currentPhase === "measuring"}
+              showResult={
+                animationState.currentPhase === "complete" ||
+                animationState.currentPhase === "measuring"
+              }
               basesMatch={currentStepData?.result.basesMatch}
             />
           </div>
@@ -190,55 +195,105 @@ function App() {
 
         {/* Informações do Passo Atual */}
         {currentStepData && (
-          <div className="quantum-card mb-6">
-            <h3 className="text-lg font-bold text-quantum-blue mb-4">
-              Passo {currentStep} de {totalSteps}
+          <div className="quantum-card mb-8 !p-8">
+            <h3 className="text-2xl font-bold text-quantum-accent mb-6 text-center">
+              Passo {currentStep}
             </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-sm text-gray-400 mb-2">Alice envia</div>
-                <div className="font-mono text-lg">
-                  Bit: <span style={{ color: currentStepData.alice.bit === 0 ? '#00ff88' : '#ff6b6b' }}>
-                    {currentStepData.alice.bit}
-                  </span>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+              <div className="bg-gray-800/50 rounded-lg p-6">
+                <div className="text-lg text-gray-300 mb-4 font-semibold">
+                  Alice envia
                 </div>
-                <div className="font-mono text-sm">
-                  Base: <span style={{ color: currentStepData.alice.basis === 'computational' ? '#00d4ff' : '#9d4edd' }}>
-                    {currentStepData.alice.basis === 'computational' ? 'Z' : 'X'}
-                  </span>
-                </div>
-                <div className="text-xs text-gray-400">
-                  Polarização: {currentStepData.alice.angle}°
+                <div className="space-y-3">
+                  <div className="font-mono text-xl">
+                    Bit:{" "}
+                    <span
+                      className="font-bold"
+                      style={{
+                        color: getBitColor(currentStepData.alice.bit),
+                      }}
+                    >
+                      {currentStepData.alice.bit}
+                    </span>
+                  </div>
+                  <div className="font-mono text-lg">
+                    Base:{" "}
+                    <span
+                      style={{
+                        color:
+                          currentStepData.alice.basis === "computational"
+                            ? "#6366f1"
+                            : "#3b82f6",
+                      }}
+                    >
+                      {currentStepData.alice.basis === "computational"
+                        ? "Z"
+                        : "X"}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    Polarização: {currentStepData.alice.angle}°
+                  </div>
                 </div>
               </div>
 
-              <div className="text-center">
-                <div className="text-sm text-gray-400 mb-2">Resultado</div>
-                <div className={`text-lg font-bold ${
-                  currentStepData.result.basesMatch ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  {currentStepData.result.basesMatch ? '✓ Bases Iguais' : '✗ Bases Diferentes'}
+              <div className="bg-gray-800/50 rounded-lg p-6">
+                <div className="text-lg text-gray-300 mb-4 font-semibold">
+                  Resultado
                 </div>
-                <div className="text-sm text-gray-400">
-                  {currentStepData.result.willKeep ? 'Bit será mantido' : 'Bit será descartado'}
+                <div
+                  className={`text-xl font-bold mb-3 ${
+                    currentStepData.result.basesMatch
+                      ? "text-emerald-400"
+                      : "text-orange-400"
+                  }`}
+                >
+                  {currentStepData.result.basesMatch
+                    ? "✓ Bases Iguais"
+                    : "✗ Bases Diferentes"}
+                </div>
+                <div className="text-base text-gray-400">
+                  {currentStepData.result.willKeep
+                    ? "Bit será mantido"
+                    : "Bit será descartado"}
                 </div>
               </div>
 
-              <div className="text-center">
-                <div className="text-sm text-gray-400 mb-2">Bob mede</div>
-                <div className="font-mono text-lg">
-                  Bit: <span style={{ color: currentStepData.bob.bit === 0 ? '#00ff88' : '#ff6b6b' }}>
-                    {currentStepData.bob.bit}
-                  </span>
+              <div className="bg-gray-800/50 rounded-lg p-6">
+                <div className="text-lg text-gray-300 mb-4 font-semibold">
+                  Bob mede
                 </div>
-                <div className="font-mono text-sm">
-                  Base: <span style={{ color: currentStepData.bob.basis === 'computational' ? '#00d4ff' : '#9d4edd' }}>
-                    {currentStepData.bob.basis === 'computational' ? 'Z' : 'X'}
-                  </span>
-                </div>
-                <div className="text-xs text-gray-400">
-                  Detector: {currentStepData.bob.measurementAngle}°
+                <div className="space-y-3">
+                  <div className="font-mono text-xl">
+                    Bit:{" "}
+                    <span
+                      className="font-bold"
+                      style={{
+                        color: getBitColor(currentStepData.bob.bit),
+                      }}
+                    >
+                      {currentStepData.bob.bit}
+                    </span>
+                  </div>
+                  <div className="font-mono text-lg">
+                    Base:{" "}
+                    <span
+                      style={{
+                        color:
+                          currentStepData.bob.basis === "computational"
+                            ? "#6366f1"
+                            : "#3b82f6",
+                      }}
+                    >
+                      {currentStepData.bob.basis === "computational"
+                        ? "Z"
+                        : "X"}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    Detector: {currentStepData.bob.measurementAngle}°
+                  </div>
                 </div>
               </div>
             </div>
@@ -250,7 +305,7 @@ function App() {
           <h3 className="text-lg font-bold text-quantum-blue mb-4">
             Histórico da Simulação
           </h3>
-          <StepHistory 
+          <StepHistory
             steps={steps}
             currentStep={currentStep}
             sharedKey={sharedKey}
@@ -264,4 +319,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;
