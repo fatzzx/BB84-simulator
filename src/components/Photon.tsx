@@ -24,7 +24,9 @@ const Photon: React.FC<IPhotonProps> = ({
   // Função para obter a cor do fóton - usar cores de Alice pois é ela quem prepara
   const getPhotonColor = () => {
     if (!isActive) return "#6366f1";
-    return basis === "computational" ? "#6366f1" : "#3b82f6"; // Cores de Alice
+    const baseColor = basis === "computational" ? "#6366f1" : "#3b82f6";
+    // Bit 1 tem intensidade mais forte que bit 0
+    return bit === 1 ? baseColor : `${baseColor}CC`;
   };
 
   useEffect(() => {
@@ -32,31 +34,37 @@ const Photon: React.FC<IPhotonProps> = ({
       setPhotonVisible(true);
       setPosition(0);
 
-      // Anima o fóton - otimizado para máxima fluidez
-      const frameTime = 16; // 60fps fixo para máxima suavidade
+      // Anima o fóton
+      const frameTime = 16; // 60fps
       const increment = 100 / (animationDuration / frameTime);
+      let animationRef: NodeJS.Timeout;
 
-      const animation = setInterval(() => {
+      const animate = () => {
         setPosition((prev) => {
           const newPos = prev + increment;
           if (newPos >= 100) {
-            clearInterval(animation);
+            // Animação completa
             setTimeout(() => {
               setPhotonVisible(false);
               setPosition(0);
               onAnimationComplete?.();
-            }, 50);
+            }, 100);
             return 100;
           }
           return newPos;
         });
-      }, frameTime);
+      };
 
-      return () => clearInterval(animation);
-    } else {
-      setPhotonVisible(false);
-      setPosition(0);
+      animationRef = setInterval(animate, frameTime);
+
+      return () => {
+        if (animationRef) {
+          clearInterval(animationRef);
+        }
+      };
     }
+    // Não resetar automaticamente quando isActive for false
+    // O componente controla seu próprio estado de visibilidade
   }, [isActive, animationDuration, onAnimationComplete]);
 
   return (
@@ -77,15 +85,23 @@ const Photon: React.FC<IPhotonProps> = ({
             willChange: "transform", // Otimização de performance
           }}
         >
-          {/* Partícula do fóton - apenas o círculo */}
+          {/* Partícula do fóton com polarização */}
           <div
-            className="w-6 h-6 rounded-full"
+            className="w-6 h-6 rounded-full relative"
             style={{
               backgroundColor: getPhotonColor(),
               boxShadow: `0 0 25px ${getPhotonColor()}, 0 0 50px ${getPhotonColor()}40`,
               animation: "pulse 1s ease-in-out infinite",
             }}
-          />
+          >
+            {/* Linha de polarização */}
+            <div
+              className="absolute top-1/2 left-1/2 w-8 h-0.5 bg-white/80 rounded-full"
+              style={{
+                transform: `translate(-50%, -50%) rotate(${polarizationAngle}deg)`,
+              }}
+            />
+          </div>
 
           {/* Trail effect suave */}
           <div

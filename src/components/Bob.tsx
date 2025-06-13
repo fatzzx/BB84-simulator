@@ -101,7 +101,7 @@ const Bob: React.FC<IBobProps> = ({
                 className="font-mono text-2xl font-bold px-4 py-2 rounded-lg bg-gray-700/50"
                 style={{ color: getBitColor(measuredBit) }}
               >
-                {showResult && measuredBit !== undefined ? measuredBit : "?"}
+                {(showResult || measuredBit !== undefined) && measuredBit !== undefined ? measuredBit : "?"}
               </span>
             </div>
           </div>
@@ -193,24 +193,20 @@ const Bob: React.FC<IBobProps> = ({
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="text-sm text-gray-400 mb-2">Estado Medido</div>
             <div className="text-quantum-accent font-mono text-lg font-bold">
-              {showResult && currentBasis
+              {(showResult || measuredBit !== undefined) && currentBasis && measuredBit !== undefined
                 ? currentBasis === "computational"
                   ? measuredBit === 0
                     ? "|0⟩"
-                    : measuredBit === 1
-                    ? "|1⟩"
-                    : "|?⟩"
+                    : "|1⟩"
                   : measuredBit === 0
                   ? "|+⟩"
-                  : measuredBit === 1
-                  ? "|-⟩"
-                  : "|?⟩"
+                  : "|-⟩"
                 : "|?⟩"}
             </div>
           </div>
 
           {/* Indicador de sucesso */}
-          {showResult && basesMatch !== undefined && (
+          {(showResult || basesMatch !== undefined) && basesMatch !== undefined && (
             <div className="bg-gray-800/50 rounded-lg p-3">
               <div
                 className={`flex items-center justify-center space-x-2 text-lg font-semibold ${

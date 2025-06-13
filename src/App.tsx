@@ -70,44 +70,53 @@ function App() {
     runCompleteSimulation,
   } = useBB84Simulation(config);
 
-  // Controla as fases da animação de forma mais robusta
+  // Controla as fases da animação com timing otimizado
   useEffect(() => {
-    if (currentStepData && !isRunning) {
-      dispatchAnimation({ type: "SET_PHASE", phase: "preparing" });
-
-      // Sequência de animação usando timeouts encadeados
+    if (currentStepData) {
+      // Reset inicial
+      dispatchAnimation({ type: "RESET_ANIMATION" });
+      
       const timeouts: NodeJS.Timeout[] = [];
 
-      // Fase 1: Preparação (500ms)
+      // Fase 1: Preparação (100ms)
+      timeouts.push(
+        setTimeout(() => {
+          dispatchAnimation({ type: "SET_PHASE", phase: "preparing" });
+        }, 100)
+      );
+
+      // Fase 2: Início da transmissão (300ms)
       timeouts.push(
         setTimeout(() => {
           dispatchAnimation({ type: "SET_PHASE", phase: "transmitting" });
           dispatchAnimation({ type: "ACTIVATE_PHOTON" });
-        }, 500)
+        }, 300)
       );
 
-      // Fase 2: Transmissão (duração configurável)
+      // Fase 3: Fim da transmissão e início da medição
       timeouts.push(
         setTimeout(() => {
           dispatchAnimation({ type: "DEACTIVATE_PHOTON" });
           dispatchAnimation({ type: "SET_PHASE", phase: "measuring" });
-        }, 500 + config.visualizationSpeed)
+        }, 300 + config.visualizationSpeed)
       );
 
-      // Fase 3: Medição (500ms)
+      // Fase 4: Finalização (dar mais tempo para Bob mostrar os resultados)
       timeouts.push(
         setTimeout(() => {
           dispatchAnimation({ type: "SET_PHASE", phase: "complete" });
-        }, 1000 + config.visualizationSpeed)
+        }, 800 + config.visualizationSpeed)
       );
 
-      return () => timeouts.forEach(clearTimeout);
+      return () => {
+        timeouts.forEach(clearTimeout);
+      };
     }
-  }, [currentStepData, isRunning, config.visualizationSpeed]);
+  }, [currentStepData?.step, config.visualizationSpeed]);
 
   const handlePhotonComplete = () => {
+    // Callback simplificado - a lógica de fases já é controlada pelos timeouts
     dispatchAnimation({ type: "DEACTIVATE_PHOTON" });
-    dispatchAnimation({ type: "SET_PHASE", phase: "measuring" });
   };
 
   const handleStepForward = () => {
@@ -185,8 +194,10 @@ function App() {
               photonAngle={currentStepData?.photon.polarization}
               isActive={animationState.currentPhase === "measuring"}
               showResult={
-                animationState.currentPhase === "complete" ||
-                animationState.currentPhase === "measuring"
+                currentStepData !== null && 
+                (animationState.currentPhase === "complete" ||
+                 animationState.currentPhase === "measuring" ||
+                 (isRunning && currentStepData.bob.bit !== undefined))
               }
               basesMatch={currentStepData?.result.basesMatch}
             />
