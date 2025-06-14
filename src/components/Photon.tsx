@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { TMeasurementBasis } from "@/types";
+import { getPhotonColor } from "@/utils/visualization";
 
 interface IPhotonProps {
   isActive: boolean;
@@ -20,77 +21,93 @@ const Photon: React.FC<IPhotonProps> = ({
 }) => {
   const [position, setPosition] = useState(0);
   const [photonVisible, setPhotonVisible] = useState(false);
+  const animationRef = useRef<number | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Função para obter a cor do fóton - usar cores de Alice pois é ela quem prepara
-  const getPhotonColor = () => {
-    if (!isActive) return "#6366f1";
-    const baseColor = basis === "computational" ? "#6366f1" : "#3b82f6";
-    // Bit 1 tem intensidade mais forte que bit 0
-    return bit === 1 ? baseColor : `${baseColor}CC`;
-  };
+  // Obtém a cor do fóton usando a função centralizada
+  const photonColor = getPhotonColor(basis, bit, isActive);
+
+  // Limpa timeouts e animações na desmontagem
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
+    // Limpa timeouts anteriores
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+
     if (isActive) {
-      setPhotonVisible(true);
+      // Reset inicial
       setPosition(0);
+      setPhotonVisible(true);
 
-      // Anima o fóton
-      const frameTime = 16; // 60fps
-      const increment = 100 / (animationDuration / frameTime);
-      let animationRef: NodeJS.Timeout;
+      // Usa requestAnimationFrame para garantir que o DOM foi atualizado
+      animationRef.current = requestAnimationFrame(() => {
+        // Pequeno delay para garantir que o CSS está aplicado
+        timeoutRef.current = setTimeout(() => {
+          setPosition(100);
+        }, 50);
+      });
 
-      const animate = () => {
-        setPosition((prev) => {
-          const newPos = prev + increment;
-          if (newPos >= 100) {
-            // Animação completa
-            setTimeout(() => {
-              setPhotonVisible(false);
-              setPosition(0);
-              onAnimationComplete?.();
-            }, 100);
-            return 100;
-          }
-          return newPos;
-        });
-      };
-
-      animationRef = setInterval(animate, frameTime);
+      // Remove o fóton após a animação
+      const completionTimeout = setTimeout(() => {
+        setPhotonVisible(false);
+        setPosition(0);
+        onAnimationComplete?.();
+      }, animationDuration + 200); // Adiciona buffer de 200ms
 
       return () => {
-        if (animationRef) {
-          clearInterval(animationRef);
+        clearTimeout(completionTimeout);
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
         }
       };
+    } else {
+      // Se não está ativo, esconde imediatamente
+      setPhotonVisible(false);
+      setPosition(0);
     }
-    // Não resetar automaticamente quando isActive for false
-    // O componente controla seu próprio estado de visibilidade
   }, [isActive, animationDuration, onAnimationComplete]);
 
   return (
     <div className="absolute inset-0 pointer-events-none">
-      {/* Canal quântico - SEMPRE VISÍVEL - Linha maior conectando diretamente */}
+      {/* Canal quântico - SEMPRE VISÍVEL */}
       <div className="absolute top-1/2 left-0 right-0 h-2 bg-gradient-to-r from-quantum-primary/30 via-quantum-accent/60 to-quantum-secondary/30 transform -translate-y-1/2 rounded-full shadow-lg shadow-quantum-accent/20"></div>
 
       {/* Linha guia do canal - linha central mais sutil */}
       <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-quantum-accent/30 transform -translate-y-1/2"></div>
 
-      {/* Fóton viajante - APENAS O CÍRCULO */}
+      {/* Fóton viajante */}
       {photonVisible && (
         <div
           className="absolute top-1/2 transform -translate-y-1/2 z-10"
           style={{
             left: `${position}%`,
-            transition: "none",
-            willChange: "transform", // Otimização de performance
+            transition: `left ${animationDuration}ms linear`,
+            willChange: "transform",
           }}
         >
           {/* Partícula do fóton com polarização */}
           <div
             className="w-6 h-6 rounded-full relative"
             style={{
-              backgroundColor: getPhotonColor(),
-              boxShadow: `0 0 25px ${getPhotonColor()}, 0 0 50px ${getPhotonColor()}40`,
+              backgroundColor: photonColor,
+              boxShadow: `0 0 25px ${photonColor}, 0 0 50px ${photonColor}40`,
               animation: "pulse 1s ease-in-out infinite",
             }}
           >
@@ -107,7 +124,7 @@ const Photon: React.FC<IPhotonProps> = ({
           <div
             className="absolute top-1/2 right-full w-12 h-1 transform -translate-y-1/2 rounded-full"
             style={{
-              background: `linear-gradient(to left, ${getPhotonColor()}80, transparent)`,
+              background: `linear-gradient(to left, ${photonColor}80, transparent)`,
               opacity: 0.6,
             }}
           />
@@ -119,7 +136,7 @@ const Photon: React.FC<IPhotonProps> = ({
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <div
             className="w-3 h-3 rounded-full animate-ping"
-            style={{ backgroundColor: getPhotonColor() }}
+            style={{ backgroundColor: photonColor }}
           />
         </div>
       )}

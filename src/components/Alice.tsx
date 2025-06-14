@@ -1,5 +1,6 @@
 import React from "react";
 import { TMeasurementBasis } from "@/types";
+import { getBasisColor, getBitColor } from "@/utils/visualization";
 
 interface IAliceProps {
   currentBit?: 0 | 1;
@@ -14,18 +15,6 @@ const Alice: React.FC<IAliceProps> = ({
   polarizationAngle = 0,
   isActive = false,
 }) => {
-  // Cores para diferentes estados - Alice usa azul/indigo para se distinguir de Bob
-  const getBasisColor = (basis?: TMeasurementBasis) => {
-    if (!basis) return "#6366f1"; // Indigo padrão para Alice
-    return basis === "computational" ? "#6366f1" : "#3b82f6"; // Indigo e azul para Alice
-  };
-
-  // Cores neutras para os bits - sem parecer certo/errado
-  const getBitColor = (bit?: 0 | 1) => {
-    if (bit === undefined) return "#64748b";
-    return bit === 0 ? "#0ea5e9" : "#8b5cf6"; // Azul claro e roxo claro - cores neutras
-  };
-
   return (
     <div className="flex flex-col items-center space-y-6">
       {/* Nome */}

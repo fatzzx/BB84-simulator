@@ -1,5 +1,10 @@
 import React from "react";
 import { TMeasurementBasis } from "@/types";
+import {
+  getBasisColor,
+  getBitColor,
+  getPolarizationSymbol,
+} from "@/utils/visualization";
 
 interface IBobProps {
   currentBasis?: TMeasurementBasis;
@@ -20,24 +25,6 @@ const Bob: React.FC<IBobProps> = ({
   showResult = false,
   basesMatch = false,
 }) => {
-  // Cores para diferentes estados - Bob volta a usar cores similares às de Alice
-  const getBasisColor = (basis?: TMeasurementBasis) => {
-    if (!basis) return "#3b82f6"; // Azul similar ao de Alice
-    return basis === "computational" ? "#6366f1" : "#3b82f6"; // Cores similares às de Alice
-  };
-
-  // Cores neutras para os bits - sem parecer certo/errado
-  const getBitColor = (bit?: 0 | 1) => {
-    if (bit === undefined) return "#64748b";
-    return bit === 0 ? "#0ea5e9" : "#8b5cf6"; // Azul claro e roxo claro - cores neutras
-  };
-
-  // Função para obter símbolo da polarização
-  const getPolarizationSymbol = (basis?: TMeasurementBasis) => {
-    if (!basis) return "+";
-    return basis === "computational" ? "+" : "×"; // + para base Z, × para base X
-  };
-
   return (
     <div className="flex flex-col items-center space-y-6">
       {/* Nome */}
@@ -101,7 +88,10 @@ const Bob: React.FC<IBobProps> = ({
                 className="font-mono text-2xl font-bold px-4 py-2 rounded-lg bg-gray-700/50"
                 style={{ color: getBitColor(measuredBit) }}
               >
-                {(showResult || measuredBit !== undefined) && measuredBit !== undefined ? measuredBit : "?"}
+                {(showResult || measuredBit !== undefined) &&
+                measuredBit !== undefined
+                  ? measuredBit
+                  : "?"}
               </span>
             </div>
           </div>
@@ -193,7 +183,9 @@ const Bob: React.FC<IBobProps> = ({
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="text-sm text-gray-400 mb-2">Estado Medido</div>
             <div className="text-quantum-accent font-mono text-lg font-bold">
-              {(showResult || measuredBit !== undefined) && currentBasis && measuredBit !== undefined
+              {(showResult || measuredBit !== undefined) &&
+              currentBasis &&
+              measuredBit !== undefined
                 ? currentBasis === "computational"
                   ? measuredBit === 0
                     ? "|0⟩"
@@ -206,25 +198,26 @@ const Bob: React.FC<IBobProps> = ({
           </div>
 
           {/* Indicador de sucesso */}
-          {(showResult || basesMatch !== undefined) && basesMatch !== undefined && (
-            <div className="bg-gray-800/50 rounded-lg p-3">
-              <div
-                className={`flex items-center justify-center space-x-2 text-lg font-semibold ${
-                  basesMatch ? "text-emerald-400" : "text-orange-400"
-                }`}
-              >
-                <span>{basesMatch ? "✓" : "✗"}</span>
-                <span>
-                  {basesMatch ? "Bases coincidem" : "Bases diferentes"}
-                </span>
+          {(showResult || basesMatch !== undefined) &&
+            basesMatch !== undefined && (
+              <div className="bg-gray-800/50 rounded-lg p-3">
+                <div
+                  className={`flex items-center justify-center space-x-2 text-lg font-semibold ${
+                    basesMatch ? "text-emerald-400" : "text-orange-400"
+                  }`}
+                >
+                  <span>{basesMatch ? "✓" : "✗"}</span>
+                  <span>
+                    {basesMatch ? "Bases coincidem" : "Bases diferentes"}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-400 mt-2">
+                  {basesMatch
+                    ? "Bit será incluído na chave"
+                    : "Bit será descartado"}
+                </div>
               </div>
-              <div className="text-sm text-gray-400 mt-2">
-                {basesMatch
-                  ? "Bit será incluído na chave"
-                  : "Bit será descartado"}
-              </div>
-            </div>
-          )}
+            )}
         </div>
       </div>
     </div>

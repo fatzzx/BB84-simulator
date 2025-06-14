@@ -5,13 +5,6 @@ interface IStepHistoryProps {
   steps: ISimulationStep[];
   currentStep: number;
   onStepSelect?: (stepIndex: number) => void;
-  sharedKey: number[];
-  statistics: {
-    totalBits: number;
-    matchingBases: number;
-    errorRate: number;
-    keyEfficiency: number;
-  };
 }
 
 // Constantes para paginação
@@ -25,15 +18,11 @@ const StepItem = React.memo<{
   onStepSelect?: (stepIndex: number) => void;
 }>(({ step, index, currentStep, onStepSelect }) => {
   const getBasisColor = (basis: string) => {
-    return "#64748b"; // Cor neutra única para ambas as bases
-  };
-
-  const getBobBasisColor = (basis: string) => {
-    return "#64748b"; // Cor neutra única para ambas as bases
+    return "#ffffff"; // Cor branca para bases
   };
 
   const getBitColor = (bit: 0 | 1) => {
-    return "#64748b"; // Cor neutra única para ambos os bits
+    return "#ffffff"; // Cor branca para bits
   };
 
   return (
@@ -72,7 +61,7 @@ const StepItem = React.memo<{
             <div>
               Base:{" "}
               <span style={{ color: getBasisColor(step.alice.basis) }}>
-                {step.alice.basis === "computational" ? "Z" : "X"}
+                {step.alice.basis === "computational" ? "⊕" : "⊗"}
               </span>
             </div>
           </div>
@@ -87,10 +76,10 @@ const StepItem = React.memo<{
                 step.result.basesMatch ? "text-green-400" : "text-red-400"
               }
             >
-              {step.result.basesMatch ? "Match" : "Diff"}
+              {step.result.basesMatch ? "Iguais" : "Diferentes"}
             </div>
             <div className="text-gray-400">
-              {step.result.willKeep ? "Kept" : "Drop"}
+              {step.result.willKeep ? "Mantido" : "Descartado"}
             </div>
           </div>
         </div>
@@ -107,8 +96,8 @@ const StepItem = React.memo<{
             </div>
             <div>
               Base:{" "}
-              <span style={{ color: getBobBasisColor(step.bob.basis) }}>
-                {step.bob.basis === "computational" ? "Z" : "X"}
+              <span style={{ color: getBasisColor(step.bob.basis) }}>
+                {step.bob.basis === "computational" ? "⊕" : "⊗"}
               </span>
             </div>
           </div>
@@ -124,8 +113,6 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
   steps,
   currentStep,
   onStepSelect,
-  sharedKey,
-  statistics,
 }) => {
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -146,16 +133,12 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
     };
   }, [steps, currentPage]);
 
-  // Memoiza as estatísticas formatadas
-  const formattedStatistics = useMemo(
-    () => ({
-      errorRateFormatted: (statistics.errorRate * 100).toFixed(1),
-      efficiencyFormatted: (statistics.keyEfficiency * 100).toFixed(1),
-      errorRateColor:
-        statistics.errorRate > 0.11 ? "text-red-400" : "text-green-400",
-    }),
-    [statistics]
-  );
+  // Reset da página quando steps é resetado
+  React.useEffect(() => {
+    if (steps.length === 0) {
+      setCurrentPage(0);
+    }
+  }, [steps.length]);
 
   // Navega automaticamente para a última página quando novos passos são adicionados
   React.useEffect(() => {
@@ -166,6 +149,14 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
       }
     }
   }, [steps.length, currentPage]);
+
+  const handleFirstPage = () => {
+    setCurrentPage(0);
+  };
+
+  const handleLastPage = () => {
+    setCurrentPage(paginationData.totalPages - 1);
+  };
 
   return (
     <div>
@@ -179,6 +170,13 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
           {/* Controles de Paginação */}
           {paginationData.totalPages > 1 && (
             <div className="flex items-center space-x-2">
+              <button
+                onClick={handleFirstPage}
+                disabled={currentPage === 0}
+                className="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
+              >
+                ⤴ Primeira
+              </button>
               <button
                 onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                 disabled={!paginationData.hasPrevPage}
@@ -199,6 +197,13 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
                 className="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
               >
                 Próxima →
+              </button>
+              <button
+                onClick={handleLastPage}
+                disabled={currentPage === paginationData.totalPages - 1}
+                className="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
+              >
+                Última ⤵
               </button>
             </div>
           )}
@@ -222,64 +227,6 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
           </div>
         )}
       </div>
-
-      {/* Estatísticas e Chave */}
-      {steps.length > 0 && (
-        <>
-          {/* Estatísticas */}
-          <div className="mb-6">
-            <h4 className="text-lg font-bold text-quantum-blue mb-4">
-              Estatísticas
-            </h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="text-center">
-                <div className="text-gray-400">Bits Transmitidos</div>
-                <div className="text-quantum-green font-mono">
-                  {statistics.totalBits}
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-gray-400">Bases Compatíveis</div>
-                <div className="text-quantum-blue font-mono">
-                  {statistics.matchingBases}
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-gray-400">Taxa de Erro</div>
-                <div className={formattedStatistics.errorRateColor}>
-                  {formattedStatistics.errorRateFormatted}%
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-gray-400">Eficiência</div>
-                <div className="text-quantum-purple font-mono">
-                  {formattedStatistics.efficiencyFormatted}%
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Chave Compartilhada */}
-          <div>
-            <h4 className="text-lg font-bold text-quantum-blue mb-4">
-              Chave Compartilhada ({sharedKey.length} bits)
-            </h4>
-            <div className="bg-gray-800/50 p-4 rounded-lg">
-              <div className="font-mono text-quantum-green break-all text-lg">
-                {sharedKey.join("") || "Nenhuma chave gerada ainda..."}
-              </div>
-              {sharedKey.length > 0 && (
-                <div className="mt-2 text-xs text-gray-400">
-                  Representação hexadecimal:{" "}
-                  {parseInt(sharedKey.join("") || "0", 2)
-                    .toString(16)
-                    .toUpperCase()}
-                </div>
-              )}
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 };
