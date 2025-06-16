@@ -26,42 +26,42 @@ const Bob: React.FC<IBobProps> = ({
   basesMatch = false,
 }) => {
   return (
-    <div className="flex flex-col items-center space-y-6">
+    <div className="flex flex-col items-center space-y-4">
       {/* Nome */}
       <h3 className="text-2xl font-bold text-quantum-secondary">Bob</h3>
 
       {/* Avatar */}
       <div
-        className={`relative w-24 h-24 rounded-full border-4 transition-all duration-300 ${
+        className={`relative w-16 h-16 rounded-full border-4 transition-all duration-300 ${
           isActive
             ? "border-quantum-secondary shadow-quantum animate-pulse"
             : "border-quantum-surface"
         }`}
       >
         <div className="w-full h-full rounded-full bg-quantum-secondary flex items-center justify-center">
-          <span className="text-3xl">👨‍🔬</span>
+          <span className="text-2xl">👨‍🔬</span>
         </div>
 
         {/* Indicador de atividade */}
         {isActive && (
-          <div className="absolute -top-1 -right-1 w-5 h-5 bg-quantum-accent rounded-full animate-ping"></div>
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-quantum-accent rounded-full animate-ping"></div>
         )}
       </div>
 
       {/* Card de informações - tamanho fixo e maior */}
-      <div className="quantum-card !p-6 w-full max-w-[320px] min-h-[380px] flex flex-col">
-        <div className="text-center space-y-4 flex-1">
-          <div className="text-lg font-semibold text-gray-300 mb-4">
+      <div className="quantum-card !p-4 w-full max-w-[280px] min-h-[320px] flex flex-col">
+        <div className="text-center space-y-3 flex-1">
+          <div className="text-lg font-semibold text-gray-300 mb-3">
             Medindo Qubit
           </div>
 
           {/* Base de medição com símbolo visual */}
-          <div className="bg-gray-800/50 rounded-lg p-4">
-            <div className="flex items-center justify-center space-x-3 mb-2">
+          <div className="bg-gray-800/50 rounded-lg p-3">
+            <div className="flex items-center justify-center space-x-2 mb-2">
               <span className="text-base text-gray-300">Base:</span>
               <div className="flex items-center space-x-2">
                 <span
-                  className="font-mono text-lg font-semibold px-4 py-2 rounded-lg bg-gray-700/50"
+                  className="font-mono text-lg font-semibold px-3 py-1 rounded-lg bg-gray-700/50"
                   style={{ color: getBasisColor(currentBasis) }}
                 >
                   {currentBasis === "computational"
@@ -81,11 +81,11 @@ const Bob: React.FC<IBobProps> = ({
           </div>
 
           {/* Resultado da medição */}
-          <div className="bg-gray-800/50 rounded-lg p-4">
-            <div className="flex items-center justify-center space-x-3 mb-2">
+          <div className="bg-gray-800/50 rounded-lg p-3">
+            <div className="flex items-center justify-center space-x-2 mb-2">
               <span className="text-base text-gray-300">Resultado:</span>
               <span
-                className="font-mono text-2xl font-bold px-4 py-2 rounded-lg bg-gray-700/50"
+                className="font-mono text-2xl font-bold px-3 py-1 rounded-lg bg-gray-700/50"
                 style={{ color: getBitColor(measuredBit) }}
               >
                 {(showResult || measuredBit !== undefined) &&
@@ -97,11 +97,11 @@ const Bob: React.FC<IBobProps> = ({
           </div>
 
           {/* Visualização da medição */}
-          <div className="bg-gray-800/50 rounded-lg p-4">
-            <div className="text-sm text-gray-400 mb-3">
+          <div className="bg-gray-800/50 rounded-lg p-3">
+            <div className="text-sm text-gray-400 mb-2">
               Detector Polarizado {getPolarizationSymbol(currentBasis)}
             </div>
-            <div className="relative w-20 h-20 mx-auto mb-4">
+            <div className="relative w-16 h-16 mx-auto mb-3">
               {/* Base circle */}
               <div className="absolute inset-0 border-2 border-gray-600 rounded-full"></div>
 
@@ -168,7 +168,7 @@ const Bob: React.FC<IBobProps> = ({
               )}
 
               {/* Angle indicator */}
-              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
+              <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
                 <span
                   className="text-sm font-mono px-2 py-1 rounded bg-gray-700/50"
                   style={{ color: getBasisColor(currentBasis) }}
@@ -180,9 +180,9 @@ const Bob: React.FC<IBobProps> = ({
           </div>
 
           {/* Estado quântico medido */}
-          <div className="bg-gray-800/50 rounded-lg p-3">
-            <div className="text-sm text-gray-400 mb-2">Estado Medido</div>
-            <div className="text-quantum-accent font-mono text-lg font-bold">
+          <div className="bg-gray-800/50 rounded-lg p-2">
+            <div className="text-sm text-gray-400 mb-1">Estado Medido</div>
+            <div className="text-quantum-accent font-mono text-xl font-bold">
               {(showResult || measuredBit !== undefined) &&
               currentBasis &&
               measuredBit !== undefined

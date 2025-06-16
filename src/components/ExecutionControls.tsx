@@ -23,7 +23,7 @@ const ExecutionControls: React.FC<IExecutionControlsProps> = ({
         <button
           onClick={onStepForward}
           disabled={isRunning || isComplete || photonActive}
-          className="quantum-button text-xs px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+          className="quantum-button text-sm px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
           title="Execute um passo da simulação"
         >
           ▶️ Passo
@@ -32,7 +32,7 @@ const ExecutionControls: React.FC<IExecutionControlsProps> = ({
         <button
           onClick={onAutoPlay}
           disabled={isRunning || isComplete}
-          className="quantum-button text-xs px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+          className="quantum-button text-sm px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
           title="Execute automaticamente na velocidade configurada"
         >
           🔄 Auto
@@ -41,7 +41,7 @@ const ExecutionControls: React.FC<IExecutionControlsProps> = ({
         <button
           onClick={onStop}
           disabled={!isRunning}
-          className="quantum-button text-xs px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+          className="quantum-button text-sm px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
           title="Pausar a simulação automática"
         >
           ⏸️ Pausar
@@ -50,7 +50,7 @@ const ExecutionControls: React.FC<IExecutionControlsProps> = ({
         <button
           onClick={onRunComplete}
           disabled={isRunning}
-          className="quantum-button text-xs px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+          className="quantum-button text-sm px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
           title="Execute toda a simulação instantaneamente"
         >
           ⚡ Completa
@@ -58,7 +58,7 @@ const ExecutionControls: React.FC<IExecutionControlsProps> = ({
       </div>
 
       {/* Status da simulação - mais compacto */}
-      <div className="text-xs text-quantum-light/70 text-center">
+      <div className="text-sm text-quantum-light/70 text-center">
         {isRunning && "🔄 Executando..."}
         {photonActive && !isRunning && "✨ Transmitindo..."}
         {isComplete && "✅ Concluída!"}

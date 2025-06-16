@@ -27,7 +27,7 @@ const StepItem = React.memo<{
 
   return (
     <div
-      className={`p-3 rounded-lg border transition-all duration-200 overflow-hidden ${
+      className={`p-2 rounded-lg border transition-all duration-200 overflow-hidden ${
         index === currentStep - 1
           ? "bg-quantum-blue/20 border-quantum-blue/50"
           : "bg-gray-800/50 border-gray-700/50 hover:bg-gray-700/50"
@@ -35,7 +35,7 @@ const StepItem = React.memo<{
       onClick={() => onStepSelect && onStepSelect(index)}
     >
       <div className="flex items-center justify-between">
-        <div className="font-mono text-sm">Passo {step.step}</div>
+        <div className="font-mono text-xs">Passo {step.step}</div>
         <div
           className={`text-xs px-2 py-1 rounded ${
             step.result.basesMatch
@@ -47,10 +47,10 @@ const StepItem = React.memo<{
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mt-2 text-xs">
+      <div className="grid grid-cols-3 gap-3 mt-2 text-xs">
         {/* Alice */}
         <div className="text-center">
-          <div className="text-gray-400 mb-1">Alice</div>
+          <div className="text-gray-400 mb-1 text-xs">Alice</div>
           <div className="flex flex-col space-y-1">
             <div>
               Bit:{" "}
@@ -69,7 +69,7 @@ const StepItem = React.memo<{
 
         {/* Resultado */}
         <div className="text-center">
-          <div className="text-gray-400 mb-1">Resultado</div>
+          <div className="text-gray-400 mb-1 text-xs">Resultado</div>
           <div className="flex flex-col space-y-1">
             <div
               className={
@@ -86,7 +86,7 @@ const StepItem = React.memo<{
 
         {/* Bob */}
         <div className="text-center">
-          <div className="text-gray-400 mb-1">Bob</div>
+          <div className="text-gray-400 mb-1 text-xs">Bob</div>
           <div className="flex flex-col space-y-1">
             <div>
               Bit:{" "}
@@ -163,7 +163,7 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
       {/* Histórico de Passos */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-lg font-bold text-quantum-blue">
+          <h4 className="text-base font-bold text-quantum-blue">
             Histórico das Etapas ({steps.length})
           </h4>
 

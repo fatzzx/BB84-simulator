@@ -4,6 +4,17 @@ export default {
   darkMode: "class",
   theme: {
     extend: {
+      // Configurações de fonte melhoradas para legibilidade
+      fontSize: {
+        xs: ["0.75rem", { lineHeight: "1.4" }], // 12px
+        sm: ["0.875rem", { lineHeight: "1.5" }], // 14px
+        base: ["1rem", { lineHeight: "1.5" }], // 16px (padrão)
+        lg: ["1.125rem", { lineHeight: "1.6" }], // 18px
+        xl: ["1.25rem", { lineHeight: "1.6" }], // 20px
+        "2xl": ["1.375rem", { lineHeight: "1.5" }], // 22px
+        "3xl": ["1.5rem", { lineHeight: "1.4" }], // 24px
+        "4xl": ["1.875rem", { lineHeight: "1.3" }], // 30px
+      },
       colors: {
         quantum: {
           primary: "#6366f1", // Indigo suave (Alice)
