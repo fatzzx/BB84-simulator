@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { TMeasurementBasis } from "@/types";
 import { getBasisColor, getBitColor } from "@/utils/visualization";
 
@@ -15,10 +16,14 @@ const Alice: React.FC<IAliceProps> = ({
   polarizationAngle = 0,
   isActive = false,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col items-center space-y-4">
       {/* Nome */}
-      <h3 className="text-2xl font-bold text-quantum-primary">Alice</h3>
+      <h3 className="text-2xl font-bold text-quantum-primary">
+        {t("characters.alice.name")}
+      </h3>
 
       {/* Avatar */}
       <div
@@ -42,13 +47,15 @@ const Alice: React.FC<IAliceProps> = ({
       <div className="quantum-card !p-4 w-full max-w-[280px] min-h-[320px] flex flex-col">
         <div className="text-center space-y-3 flex-1">
           <div className="text-lg font-semibold text-gray-300 mb-3">
-            Preparando Qubit
+            {t("characters.alice.preparing")}
           </div>
 
           {/* Bit value */}
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="flex items-center justify-center space-x-2 mb-2">
-              <span className="text-base text-gray-300">Bit:</span>
+              <span className="text-base text-gray-300">
+                {t("characters.alice.bit")}
+              </span>
               <span
                 className="font-mono text-2xl font-bold px-3 py-1 rounded-lg bg-gray-700/50"
                 style={{ color: getBitColor(currentBit) }}
@@ -61,7 +68,9 @@ const Alice: React.FC<IAliceProps> = ({
           {/* Base */}
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="flex items-center justify-center space-x-2 mb-2">
-              <span className="text-base text-gray-300">Base:</span>
+              <span className="text-base text-gray-300">
+                {t("characters.alice.base")}
+              </span>
               <span
                 className="font-mono text-lg font-semibold px-3 py-1 rounded-lg bg-gray-700/50"
                 style={{ color: getBasisColor(currentBasis) }}
@@ -78,7 +87,7 @@ const Alice: React.FC<IAliceProps> = ({
           {/* Visualização da polarização */}
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="text-sm text-gray-400 mb-2">
-              Polarização do Fóton
+              {t("characters.alice.polarization")}
             </div>
             <div className="relative w-16 h-16 mx-auto mb-3">
               {/* Base circle */}
@@ -111,7 +120,9 @@ const Alice: React.FC<IAliceProps> = ({
 
           {/* Estado quântico */}
           <div className="bg-gray-800/50 rounded-lg p-2">
-            <div className="text-sm text-gray-400 mb-1">Estado Quântico</div>
+            <div className="text-sm text-gray-400 mb-1">
+              {t("characters.alice.quantumState")}
+            </div>
             <div className="text-quantum-accent font-mono text-xl font-bold">
               {currentBasis === "computational"
                 ? currentBit === 0

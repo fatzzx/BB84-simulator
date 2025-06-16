@@ -1,11 +1,14 @@
-import { StrictMode } from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import '@/styles/index.css'
-import '@/styles/tailwind.css'
+import { StrictMode } from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "@/styles/index.css";
+import "@/styles/tailwind.css";
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+// Importa e inicializa o i18n
+import "./i18n";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
-  </StrictMode>,
-) 
+  </StrictMode>
+);

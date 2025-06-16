@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { TMeasurementBasis } from "@/types";
 import {
   getBasisColor,
@@ -25,10 +26,14 @@ const Bob: React.FC<IBobProps> = ({
   showResult = false,
   basesMatch = false,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col items-center space-y-4">
       {/* Nome */}
-      <h3 className="text-2xl font-bold text-quantum-secondary">Bob</h3>
+      <h3 className="text-2xl font-bold text-quantum-secondary">
+        {t("characters.bob.name")}
+      </h3>
 
       {/* Avatar */}
       <div
@@ -52,13 +57,15 @@ const Bob: React.FC<IBobProps> = ({
       <div className="quantum-card !p-4 w-full max-w-[280px] min-h-[320px] flex flex-col">
         <div className="text-center space-y-3 flex-1">
           <div className="text-lg font-semibold text-gray-300 mb-3">
-            Medindo Qubit
+            {t("characters.bob.measuring")}
           </div>
 
           {/* Base de medição com símbolo visual */}
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="flex items-center justify-center space-x-2 mb-2">
-              <span className="text-base text-gray-300">Base:</span>
+              <span className="text-base text-gray-300">
+                {t("characters.bob.base")}
+              </span>
               <div className="flex items-center space-x-2">
                 <span
                   className="font-mono text-lg font-semibold px-3 py-1 rounded-lg bg-gray-700/50"
@@ -83,7 +90,9 @@ const Bob: React.FC<IBobProps> = ({
           {/* Resultado da medição */}
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="flex items-center justify-center space-x-2 mb-2">
-              <span className="text-base text-gray-300">Resultado:</span>
+              <span className="text-base text-gray-300">
+                {t("characters.bob.result")}
+              </span>
               <span
                 className="font-mono text-2xl font-bold px-3 py-1 rounded-lg bg-gray-700/50"
                 style={{ color: getBitColor(measuredBit) }}
@@ -99,7 +108,8 @@ const Bob: React.FC<IBobProps> = ({
           {/* Visualização da medição */}
           <div className="bg-gray-800/50 rounded-lg p-3">
             <div className="text-sm text-gray-400 mb-2">
-              Detector Polarizado {getPolarizationSymbol(currentBasis)}
+              {t("characters.bob.detector")}{" "}
+              {getPolarizationSymbol(currentBasis)}
             </div>
             <div className="relative w-16 h-16 mx-auto mb-3">
               {/* Base circle */}
@@ -181,7 +191,9 @@ const Bob: React.FC<IBobProps> = ({
 
           {/* Estado quântico medido */}
           <div className="bg-gray-800/50 rounded-lg p-2">
-            <div className="text-sm text-gray-400 mb-1">Estado Medido</div>
+            <div className="text-sm text-gray-400 mb-1">
+              {t("characters.bob.quantumState")}
+            </div>
             <div className="text-quantum-accent font-mono text-xl font-bold">
               {(showResult || measuredBit !== undefined) &&
               currentBasis &&
@@ -208,13 +220,15 @@ const Bob: React.FC<IBobProps> = ({
                 >
                   <span>{basesMatch ? "✓" : "✗"}</span>
                   <span>
-                    {basesMatch ? "Bases coincidem" : "Bases diferentes"}
+                    {basesMatch
+                      ? t("characters.bob.basesMatch")
+                      : t("characters.bob.basesDifferent")}
                   </span>
                 </div>
                 <div className="text-sm text-gray-400 mt-2">
                   {basesMatch
-                    ? "Bit será incluído na chave"
-                    : "Bit será descartado"}
+                    ? t("characters.bob.bitIncluded")
+                    : t("characters.bob.bitDiscarded")}
                 </div>
               </div>
             )}

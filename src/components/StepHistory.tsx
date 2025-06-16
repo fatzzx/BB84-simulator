@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { ISimulationStep } from "@/hooks/useBB84Simulation";
 
 interface IStepHistoryProps {
@@ -17,6 +18,8 @@ const StepItem = React.memo<{
   currentStep: number;
   onStepSelect?: (stepIndex: number) => void;
 }>(({ step, index, currentStep, onStepSelect }) => {
+  const { t } = useTranslation();
+
   const getBasisColor = (basis: string) => {
     return "#ffffff"; // Cor branca para bases
   };
@@ -35,7 +38,9 @@ const StepItem = React.memo<{
       onClick={() => onStepSelect && onStepSelect(index)}
     >
       <div className="flex items-center justify-between">
-        <div className="font-mono text-xs">Passo {step.step}</div>
+        <div className="font-mono text-xs">
+          {t("history.step")} {step.step}
+        </div>
         <div
           className={`text-xs px-2 py-1 rounded ${
             step.result.basesMatch
@@ -50,16 +55,16 @@ const StepItem = React.memo<{
       <div className="grid grid-cols-3 gap-3 mt-2 text-xs">
         {/* Alice */}
         <div className="text-center">
-          <div className="text-gray-400 mb-1 text-xs">Alice</div>
+          <div className="text-gray-400 mb-1 text-xs">{t("history.alice")}</div>
           <div className="flex flex-col space-y-1">
             <div>
-              Bit:{" "}
+              {t("history.bit")}{" "}
               <span style={{ color: getBitColor(step.alice.bit) }}>
                 {step.alice.bit}
               </span>
             </div>
             <div>
-              Base:{" "}
+              {t("history.base")}{" "}
               <span style={{ color: getBasisColor(step.alice.basis) }}>
                 {step.alice.basis === "computational" ? "⊕" : "⊗"}
               </span>
@@ -69,33 +74,39 @@ const StepItem = React.memo<{
 
         {/* Resultado */}
         <div className="text-center">
-          <div className="text-gray-400 mb-1 text-xs">Resultado</div>
+          <div className="text-gray-400 mb-1 text-xs">
+            {t("history.result")}
+          </div>
           <div className="flex flex-col space-y-1">
             <div
               className={
                 step.result.basesMatch ? "text-green-400" : "text-red-400"
               }
             >
-              {step.result.basesMatch ? "Iguais" : "Diferentes"}
+              {step.result.basesMatch
+                ? t("history.equal")
+                : t("history.different")}
             </div>
             <div className="text-gray-400">
-              {step.result.willKeep ? "Mantido" : "Descartado"}
+              {step.result.willKeep
+                ? t("history.kept")
+                : t("history.discarded")}
             </div>
           </div>
         </div>
 
         {/* Bob */}
         <div className="text-center">
-          <div className="text-gray-400 mb-1 text-xs">Bob</div>
+          <div className="text-gray-400 mb-1 text-xs">{t("history.bob")}</div>
           <div className="flex flex-col space-y-1">
             <div>
-              Bit:{" "}
+              {t("history.bit")}{" "}
               <span style={{ color: getBitColor(step.bob.bit) }}>
                 {step.bob.bit}
               </span>
             </div>
             <div>
-              Base:{" "}
+              {t("history.base")}{" "}
               <span style={{ color: getBasisColor(step.bob.basis) }}>
                 {step.bob.basis === "computational" ? "⊕" : "⊗"}
               </span>
@@ -114,6 +125,7 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
   currentStep,
   onStepSelect,
 }) => {
+  const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState(0);
 
   // Calcula paginação com memoização
@@ -164,7 +176,7 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <h4 className="text-base font-bold text-quantum-blue">
-            Histórico das Etapas ({steps.length})
+            {t("history.title")} ({steps.length})
           </h4>
 
           {/* Controles de Paginação */}
@@ -175,14 +187,14 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
                 disabled={currentPage === 0}
                 className="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
               >
-                ⤴ Primeira
+                {t("history.first")}
               </button>
               <button
                 onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                 disabled={!paginationData.hasPrevPage}
                 className="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
               >
-                ← Anterior
+                {t("history.previous")}
               </button>
               <span className="text-xs text-gray-400">
                 {currentPage + 1} / {paginationData.totalPages}
@@ -196,34 +208,37 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
                 disabled={!paginationData.hasNextPage}
                 className="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
               >
-                Próxima →
+                {t("history.next")}
               </button>
               <button
                 onClick={handleLastPage}
                 disabled={currentPage === paginationData.totalPages - 1}
                 className="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
               >
-                Última ⤵
+                {t("history.last")}
               </button>
             </div>
           )}
         </div>
 
-        {steps.length === 0 ? (
-          <div className="text-center text-gray-400 py-8">
-            Nenhuma etapa executada ainda
-          </div>
-        ) : (
-          <div className="max-h-64 overflow-y-auto space-y-2">
-            {paginationData.currentSteps.map((step, localIndex) => (
-              <StepItem
-                key={step.step}
-                step={step}
-                index={paginationData.startIndex + localIndex}
-                currentStep={currentStep}
-                onStepSelect={onStepSelect}
-              />
-            ))}
+        {/* Lista de passos */}
+        <div className="space-y-2 max-h-96 overflow-y-auto">
+          {paginationData.currentSteps.map((step, index) => (
+            <StepItem
+              key={step.step}
+              step={step}
+              index={paginationData.startIndex + index}
+              currentStep={currentStep}
+              onStepSelect={onStepSelect}
+            />
+          ))}
+        </div>
+
+        {/* Info de paginação */}
+        {paginationData.totalPages > 1 && (
+          <div className="text-xs text-gray-400 mt-3 text-center">
+            Mostrando {paginationData.startIndex + 1} a{" "}
+            {paginationData.endIndex} de {steps.length} passos
           </div>
         )}
       </div>
@@ -231,4 +246,4 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
   );
 };
 
-export default React.memo(StepHistory);
+export default StepHistory;

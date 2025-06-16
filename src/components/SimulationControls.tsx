@@ -1,4 +1,5 @@
 import { ISimulationConfig } from "@/types";
+import { useTranslation } from "react-i18next";
 
 interface ISimulationControlsProps {
   config: ISimulationConfig;
@@ -13,16 +14,18 @@ const SimulationControls: React.FC<ISimulationControlsProps> = ({
   isRunning,
   onReset,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="quantum-card">
       <h2 className="text-xl font-bold text-quantum-blue mb-3">
-        Configurações da Simulação
+        {t("simulation.title")}
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
-            Número de Transmissões: {config.keyLength}
+            {t("simulation.transmissions")}: {config.keyLength}
           </label>
           <input
             type="range"
@@ -39,7 +42,7 @@ const SimulationControls: React.FC<ISimulationControlsProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
-            Taxa de Erro: {(config.errorRate * 100).toFixed(0)}%
+            {t("simulation.errorRate")}: {(config.errorRate * 100).toFixed(0)}%
           </label>
           <input
             type="range"
@@ -60,7 +63,7 @@ const SimulationControls: React.FC<ISimulationControlsProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
-            Velocidade: {config.visualizationSpeed}ms
+            {t("simulation.speed")}: {config.visualizationSpeed}ms
           </label>
           <input
             type="range"
@@ -85,7 +88,7 @@ const SimulationControls: React.FC<ISimulationControlsProps> = ({
             disabled={isRunning}
             className="quantum-button text-sm px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            🔄 Resetar
+            {t("simulation.reset")}
           </button>
         </div>
       </div>
@@ -93,27 +96,14 @@ const SimulationControls: React.FC<ISimulationControlsProps> = ({
       {/* Instruções */}
       <div className="mt-3 p-3 bg-gray-800/50 rounded-lg">
         <h4 className="text-sm font-semibold text-quantum-blue mb-2">
-          Como usar:
+          {t("simulation.howToUse")}
         </h4>
         <ul className="text-xs text-gray-300 space-y-1">
-          <li>
-            • <strong>Transmissões:</strong> Quantos fótons Alice enviará para
-            Bob
-          </li>
-          <li>
-            • <strong>Chave final:</strong> Resultado das transmissões com bases
-            iguais
-          </li>
-          <li>
-            • <strong>Taxa de Erro:</strong> Simula eavesdropping (espião
-            interceptando)
-          </li>
-          <li>
-            • <strong>Bases iguais:</strong> Bits são mantidos na chave final
-          </li>
-          <li>
-            • <strong>Bases diferentes:</strong> Bits são descartados
-          </li>
+          <li>{t("simulation.instructions.transmissions")}</li>
+          <li>{t("simulation.instructions.finalKey")}</li>
+          <li>{t("simulation.instructions.errorRate")}</li>
+          <li>{t("simulation.instructions.sameBases")}</li>
+          <li>{t("simulation.instructions.differentBases")}</li>
         </ul>
       </div>
     </div>

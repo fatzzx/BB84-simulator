@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 interface IExecutionControlsProps {
   isRunning: boolean;
   isComplete: boolean;
@@ -17,6 +19,8 @@ const ExecutionControls: React.FC<IExecutionControlsProps> = ({
   onStop,
   onRunComplete,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col items-center space-y-2 bg-quantum-surface/50 backdrop-blur-sm rounded-lg p-3 border border-quantum-primary/30 shadow-lg">
       <div className="flex flex-wrap gap-2 justify-center">
@@ -24,45 +28,45 @@ const ExecutionControls: React.FC<IExecutionControlsProps> = ({
           onClick={onStepForward}
           disabled={isRunning || isComplete || photonActive}
           className="quantum-button text-sm px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-          title="Execute um passo da simulação"
+          title={t("controls.stepTooltip")}
         >
-          ▶️ Passo
+          {t("controls.step")}
         </button>
 
         <button
           onClick={onAutoPlay}
           disabled={isRunning || isComplete}
           className="quantum-button text-sm px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-          title="Execute automaticamente na velocidade configurada"
+          title={t("controls.autoTooltip")}
         >
-          🔄 Auto
+          {t("controls.auto")}
         </button>
 
         <button
           onClick={onStop}
           disabled={!isRunning}
           className="quantum-button text-sm px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-          title="Pausar a simulação automática"
+          title={t("controls.pauseTooltip")}
         >
-          ⏸️ Pausar
+          {t("controls.pause")}
         </button>
 
         <button
           onClick={onRunComplete}
           disabled={isRunning}
           className="quantum-button text-sm px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-          title="Execute toda a simulação instantaneamente"
+          title={t("controls.completeTooltip")}
         >
-          ⚡ Completa
+          {t("controls.complete")}
         </button>
       </div>
 
       {/* Status da simulação - mais compacto */}
       <div className="text-sm text-quantum-light/70 text-center">
-        {isRunning && "🔄 Executando..."}
-        {photonActive && !isRunning && "✨ Transmitindo..."}
-        {isComplete && "✅ Concluída!"}
-        {!isRunning && !photonActive && !isComplete && "⏹️ Pronto"}
+        {isRunning && t("status.running")}
+        {photonActive && !isRunning && t("status.transmitting")}
+        {isComplete && t("status.complete")}
+        {!isRunning && !photonActive && !isComplete && t("status.ready")}
       </div>
     </div>
   );

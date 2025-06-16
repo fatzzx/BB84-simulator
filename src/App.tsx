@@ -1,10 +1,12 @@
 import { useState, useEffect, useReducer } from "react";
+import { useTranslation } from "react-i18next";
 import Alice from "@/components/Alice";
 import Bob from "@/components/Bob";
 import Photon from "@/components/Photon";
 import SimulationControls from "@/components/SimulationControls";
 import ExecutionControls from "@/components/ExecutionControls";
 import StepHistory from "@/components/StepHistory";
+import LanguageToggle from "@/components/LanguageToggle";
 import { Footer } from "@/components";
 import { useBB84Simulation } from "@/hooks/useBB84Simulation";
 import { ISimulationConfig } from "@/types";
@@ -52,6 +54,8 @@ const animationReducer = (
 };
 
 function App() {
+  const { t } = useTranslation();
+
   const [config, setConfig] = useState<ISimulationConfig>({
     keyLength: 20, // Agora representa número de transmissões
     errorRate: 0,
@@ -157,12 +161,18 @@ function App() {
   return (
     <div className="min-h-screen bg-quantum-dark flex flex-col">
       <header className="p-4 text-center bg-quantum-surface/50 backdrop-blur-sm border-b border-quantum-primary/20">
-        <h1 className="text-2xl font-bold mb-2 bg-gradient-to-r from-quantum-primary via-quantum-secondary to-quantum-primary bg-clip-text text-transparent">
-          Simulador do Protocolo BB84
-        </h1>
-        <p className="text-quantum-light/70 text-lg">
-          Demonstração Interativa de Criptografia Quântica
-        </p>
+        <div className="flex items-center justify-between max-w-6xl mx-auto">
+          <div className="flex-1"></div>
+          <div className="flex-1 text-center">
+            <h1 className="text-2xl font-bold mb-2 bg-gradient-to-r from-quantum-primary via-quantum-secondary to-quantum-primary bg-clip-text text-transparent">
+              {t("app.title")}
+            </h1>
+            <p className="text-quantum-light/70 text-lg">{t("app.subtitle")}</p>
+          </div>
+          <div className="flex-1 flex justify-end">
+            <LanguageToggle />
+          </div>
+        </div>
       </header>
 
       <main className="container mx-auto px-3 py-4 flex-grow">
@@ -245,13 +255,17 @@ function App() {
           <div className="mb-6 p-4 bg-quantum-surface/30 rounded-lg border border-quantum-primary/20">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-base">
               <div>
-                <span className="text-quantum-light/60">Transmissões:</span>
+                <span className="text-quantum-light/60">
+                  {t("stepInfo.transmissions")}
+                </span>
                 <span className="ml-2 font-mono text-quantum-primary text-lg">
                   {currentStepData.step}
                 </span>
               </div>
               <div>
-                <span className="text-quantum-light/60">Bit de Alice:</span>
+                <span className="text-quantum-light/60">
+                  {t("stepInfo.aliceBit")}
+                </span>
                 <span
                   className="ml-2 font-mono font-bold text-lg"
                   style={{ color: getBitColor(currentStepData.alice.bit) }}
@@ -260,7 +274,9 @@ function App() {
                 </span>
               </div>
               <div>
-                <span className="text-quantum-light/60">Base de Alice:</span>
+                <span className="text-quantum-light/60">
+                  {t("stepInfo.aliceBase")}
+                </span>
                 <span
                   className="ml-2 font-mono text-lg"
                   style={{
@@ -271,7 +287,9 @@ function App() {
                 </span>
               </div>
               <div>
-                <span className="text-quantum-light/60">Base de Bob:</span>
+                <span className="text-quantum-light/60">
+                  {t("stepInfo.bobBase")}
+                </span>
                 <span
                   className="ml-2 font-mono text-lg"
                   style={{ color: getBasisColor(currentStepData.bob.basis) }}
@@ -283,7 +301,9 @@ function App() {
             <div className="mt-3 pt-3 border-t border-quantum-primary/10">
               <div className="flex items-center gap-4 text-base">
                 <div>
-                  <span className="text-quantum-light/60">Bases combinam:</span>
+                  <span className="text-quantum-light/60">
+                    {t("stepInfo.basesMatch")}
+                  </span>
                   <span
                     className="ml-2 font-bold text-lg"
                     style={{
@@ -292,13 +312,15 @@ function App() {
                         : "#ef4444",
                     }}
                   >
-                    {currentStepData.result.basesMatch ? "Sim" : "Não"}
+                    {currentStepData.result.basesMatch
+                      ? t("stepInfo.yes")
+                      : t("stepInfo.no")}
                   </span>
                 </div>
                 {currentStepData.result.basesMatch && (
                   <div>
                     <span className="text-quantum-light/60">
-                      Bit preservado:
+                      {t("stepInfo.bitPreserved")}
                     </span>
                     <span
                       className="ml-2 font-bold text-lg"
@@ -308,7 +330,9 @@ function App() {
                           : "#ef4444",
                       }}
                     >
-                      {currentStepData.result.bitPreserved ? "Sim" : "Não"}
+                      {currentStepData.result.bitPreserved
+                        ? t("stepInfo.yes")
+                        : t("stepInfo.no")}
                     </span>
                   </div>
                 )}
@@ -321,7 +345,7 @@ function App() {
         {sharedKey.length > 0 && (
           <div className="mb-6">
             <h3 className="text-xl font-semibold text-quantum-primary mb-3">
-              Chave Compartilhada:
+              {t("sharedKey.title")}:
             </h3>
             <div className="quantum-card">
               <div className="font-mono text-xl flex flex-wrap gap-2">
@@ -346,7 +370,7 @@ function App() {
                 {statistics.totalBits}
               </div>
               <div className="text-base text-quantum-light/60">
-                Bits Transmitidos
+                {t("statistics.bitsTransmitted")}
               </div>
             </div>
             <div className="quantum-card text-center">
@@ -354,7 +378,7 @@ function App() {
                 {statistics.matchingBases}
               </div>
               <div className="text-base text-quantum-light/60">
-                Bases Iguais
+                {t("statistics.matchingBases")}
               </div>
             </div>
             <div className="quantum-card text-center">
@@ -362,7 +386,7 @@ function App() {
                 {sharedKey.length}
               </div>
               <div className="text-base text-quantum-light/60">
-                Chave Compartilhada
+                {t("sharedKey.title")}
               </div>
             </div>
             <div className="quantum-card text-center">
@@ -370,7 +394,7 @@ function App() {
                 {(statistics.errorRate * 100).toFixed(1)}%
               </div>
               <div className="text-base text-quantum-light/60">
-                Taxa de Erro
+                {t("statistics.errorRate")}
               </div>
             </div>
           </div>
