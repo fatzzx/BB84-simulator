@@ -6,7 +6,7 @@ import {
   ISimulationConfig,
 } from "@/types";
 import { QUANTUM_STATES } from "@/constants/quantum";
-import { secureRandom, randomBit, randomBasis } from "@/utils/quantum";
+import { randomBit, randomBasis } from "@/utils/quantum";
 
 export class BB84Simulator {
   private config: ISimulationConfig;
@@ -152,7 +152,6 @@ export class BB84Simulator {
     let qubit = this.prepareQubit(aliceBit, aliceBasis);
 
     // Simula interceptação (se habilitada)
-    const originalQubit = { ...qubit };
     qubit = this.simulateEavesdropping(qubit);
 
     // Bob mede

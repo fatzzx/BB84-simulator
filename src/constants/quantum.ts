@@ -1,4 +1,4 @@
-import { IQuantumState, IQuantumStates, TQuantumOperator } from "@/types";
+import { IQuantumStates, TQuantumOperator } from "@/types";
 
 // Estados quânticos básicos do protocolo BB84
 export const QUANTUM_STATES: IQuantumStates = {

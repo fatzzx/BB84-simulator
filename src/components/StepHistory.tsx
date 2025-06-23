@@ -20,11 +20,11 @@ const StepItem = React.memo<{
 }>(({ step, index, currentStep, onStepSelect }) => {
   const { t } = useTranslation();
 
-  const getBasisColor = (basis: string) => {
+  const getBasisColor = () => {
     return "#ffffff"; // Cor branca para bases
   };
 
-  const getBitColor = (bit: 0 | 1) => {
+  const getBitColor = () => {
     return "#ffffff"; // Cor branca para bits
   };
 
@@ -59,13 +59,11 @@ const StepItem = React.memo<{
           <div className="flex flex-col space-y-1">
             <div>
               {t("history.bit")}{" "}
-              <span style={{ color: getBitColor(step.alice.bit) }}>
-                {step.alice.bit}
-              </span>
+              <span style={{ color: getBitColor() }}>{step.alice.bit}</span>
             </div>
             <div>
               {t("history.base")}{" "}
-              <span style={{ color: getBasisColor(step.alice.basis) }}>
+              <span style={{ color: getBasisColor() }}>
                 {step.alice.basis === "computational" ? "⊕" : "⊗"}
               </span>
             </div>
@@ -101,13 +99,11 @@ const StepItem = React.memo<{
           <div className="flex flex-col space-y-1">
             <div>
               {t("history.bit")}{" "}
-              <span style={{ color: getBitColor(step.bob.bit) }}>
-                {step.bob.bit}
-              </span>
+              <span style={{ color: getBitColor() }}>{step.bob.bit}</span>
             </div>
             <div>
               {t("history.base")}{" "}
-              <span style={{ color: getBasisColor(step.bob.basis) }}>
+              <span style={{ color: getBasisColor() }}>
                 {step.bob.basis === "computational" ? "⊕" : "⊗"}
               </span>
             </div>
@@ -145,16 +141,16 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
       hasPrevPage: currentPage > 0,
     };
 
-    console.log(
-      "Pagination - currentPage:",
-      currentPage,
-      "totalPages:",
-      data.totalPages,
-      "hasNext:",
-      data.hasNextPage,
-      "hasPrev:",
-      data.hasPrevPage
-    );
+    // console.log(
+    //   "Pagination - currentPage:",
+    //   currentPage,
+    //   "totalPages:",
+    //   data.totalPages,
+    //   "hasNext:",
+    //   data.hasNextPage,
+    //   "hasPrev:",
+    //   data.hasPrevPage
+    // );
 
     return data;
   }, [steps, currentPage]);
@@ -191,42 +187,42 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
   }, [steps.length, allowAutoNavigation]);
 
   const handleFirstPage = () => {
-    console.log("HandleFirstPage clicked - current page:", currentPage);
+    // console.log("HandleFirstPage clicked - current page:", currentPage);
     setAllowAutoNavigation(false);
     setCurrentPage(0);
   };
 
   const handlePreviousPage = () => {
-    console.log(
-      "HandlePreviousPage clicked - current page:",
-      currentPage,
-      "total pages:",
-      paginationData.totalPages
-    );
+    // console.log(
+    //   "HandlePreviousPage clicked - current page:",
+    //   currentPage,
+    //   "total pages:",
+    //   paginationData.totalPages
+    // );
     setAllowAutoNavigation(false);
     const newPage = Math.max(0, currentPage - 1);
-    console.log("Setting new page to:", newPage);
+    // console.log("Setting new page to:", newPage);
     setCurrentPage(newPage);
   };
 
   const handleNextPage = () => {
-    console.log(
-      "HandleNextPage clicked - current page:",
-      currentPage,
-      "total pages:",
-      paginationData.totalPages
-    );
+    // console.log(
+    //   "HandleNextPage clicked - current page:",
+    //   currentPage,
+    //   "total pages:",
+    //   paginationData.totalPages
+    // );
     setAllowAutoNavigation(false);
     const newPage = Math.min(paginationData.totalPages - 1, currentPage + 1);
-    console.log("Setting new page to:", newPage);
+    // console.log("Setting new page to:", newPage);
     setCurrentPage(newPage);
   };
 
   const handleLastPage = () => {
-    console.log("HandleLastPage clicked - current page:", currentPage);
+    // console.log("HandleLastPage clicked - current page:", currentPage);
     setAllowAutoNavigation(false);
     const newPage = paginationData.totalPages - 1;
-    console.log("Setting new page to:", newPage);
+    // console.log("Setting new page to:", newPage);
     setCurrentPage(newPage);
   };
 
@@ -240,49 +236,45 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
           </h4>
 
           {/* Controles de Paginação */}
-          {steps.length > STEPS_PER_PAGE &&
-            (() => {
-              console.log("Rendering pagination controls - showing buttons");
-              return true;
-            })() && (
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={handleFirstPage}
-                  disabled={currentPage === 0}
-                  className="px-3 py-2 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
-                  title={t("history.first")}
-                >
-                  {t("history.first")}
-                </button>
-                <button
-                  onClick={handlePreviousPage}
-                  disabled={!paginationData.hasPrevPage}
-                  className="px-3 py-2 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
-                  title={t("history.previous")}
-                >
-                  {t("history.previous")}
-                </button>
-                <span className="text-xs text-gray-400">
-                  {currentPage + 1} / {paginationData.totalPages}
-                </span>
-                <button
-                  onClick={handleNextPage}
-                  disabled={!paginationData.hasNextPage}
-                  className="px-3 py-2 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
-                  title={t("history.next")}
-                >
-                  {t("history.next")}
-                </button>
-                <button
-                  onClick={handleLastPage}
-                  disabled={currentPage === paginationData.totalPages - 1}
-                  className="px-3 py-2 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
-                  title={t("history.last")}
-                >
-                  {t("history.last")}
-                </button>
-              </div>
-            )}
+          {steps.length > STEPS_PER_PAGE && (
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleFirstPage}
+                disabled={currentPage === 0}
+                className="px-3 py-2 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
+                title={t("history.first")}
+              >
+                {t("history.first")}
+              </button>
+              <button
+                onClick={handlePreviousPage}
+                disabled={!paginationData.hasPrevPage}
+                className="px-3 py-2 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
+                title={t("history.previous")}
+              >
+                {t("history.previous")}
+              </button>
+              <span className="text-xs text-gray-400">
+                {currentPage + 1} / {paginationData.totalPages}
+              </span>
+              <button
+                onClick={handleNextPage}
+                disabled={!paginationData.hasNextPage}
+                className="px-3 py-2 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
+                title={t("history.next")}
+              >
+                {t("history.next")}
+              </button>
+              <button
+                onClick={handleLastPage}
+                disabled={currentPage === paginationData.totalPages - 1}
+                className="px-3 py-2 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
+                title={t("history.last")}
+              >
+                {t("history.last")}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Lista de passos */}

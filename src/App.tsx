@@ -70,7 +70,6 @@ function App() {
 
   const {
     currentStep,
-    totalSteps,
     steps,
     sharedKey,
     isRunning,
