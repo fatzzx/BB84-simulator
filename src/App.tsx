@@ -58,7 +58,6 @@ function App() {
 
   const [config, setConfig] = useState<ISimulationConfig>({
     keyLength: 20, // Agora representa número de transmissões
-    errorRate: 0,
     eavesdropperPresent: false,
     visualizationSpeed: 1500,
   });
@@ -83,6 +82,7 @@ function App() {
     stopSimulation,
     resetSimulation,
     runCompleteSimulation,
+    selectStep,
   } = useBB84Simulation(config);
 
   // Controla as fases da animação com timing otimizado
@@ -364,7 +364,7 @@ function App() {
 
         {/* Estatísticas */}
         {steps.length > 0 && (
-          <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="quantum-card text-center">
               <div className="text-3xl font-bold text-quantum-primary">
                 {statistics.totalBits}
@@ -389,20 +389,16 @@ function App() {
                 {t("sharedKey.title")}
               </div>
             </div>
-            <div className="quantum-card text-center">
-              <div className="text-3xl font-bold text-red-400">
-                {(statistics.errorRate * 100).toFixed(1)}%
-              </div>
-              <div className="text-base text-quantum-light/60">
-                {t("statistics.errorRate")}
-              </div>
-            </div>
           </div>
         )}
 
         {/* Histórico de Passos */}
         {steps.length > 0 && (
-          <StepHistory steps={steps} currentStep={currentStep} />
+          <StepHistory
+            steps={steps}
+            currentStep={currentStep}
+            onStepSelect={selectStep}
+          />
         )}
       </main>
 

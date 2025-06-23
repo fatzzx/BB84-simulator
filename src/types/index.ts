@@ -8,7 +8,7 @@ export interface IQuantumState {
 }
 
 // Bases de medição
-export type TMeasurementBasis = 'computational' | 'hadamard';
+export type TMeasurementBasis = "computational" | "hadamard";
 
 // Resultado de medição
 export interface IMeasurementResult {
@@ -31,14 +31,12 @@ export interface IBB84SimulationResult {
   bobBases: TMeasurementBasis[];
   bobMeasurements: number[];
   sharedKey: number[];
-  errorRate: number;
-  keyLength: number;
+  keyLength: number; // Tamanho real da chave resultante após reconciliação das bases
 }
 
 // Configurações da simulação
 export interface ISimulationConfig {
-  keyLength: number;
-  errorRate: number;
+  keyLength: number; // Número de transmissões/bits a serem enviados por Alice
   eavesdropperPresent: boolean;
   visualizationSpeed: number;
 }
@@ -57,6 +55,5 @@ export type TQuantumOperator = number[][];
 // Resultado de detecção de eavesdropping
 export interface IEavesdropDetection {
   detected: boolean;
-  errorRate: number;
   threshold: number;
-} 
+}

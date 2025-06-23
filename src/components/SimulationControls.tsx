@@ -22,7 +22,7 @@ const SimulationControls: React.FC<ISimulationControlsProps> = ({
         {t("simulation.title")}
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             {t("simulation.transmissions")}: {config.keyLength}
@@ -34,27 +34,6 @@ const SimulationControls: React.FC<ISimulationControlsProps> = ({
             value={config.keyLength}
             onChange={(e) =>
               onConfigChange({ ...config, keyLength: parseInt(e.target.value) })
-            }
-            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-            disabled={isRunning}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            {t("simulation.errorRate")}: {(config.errorRate * 100).toFixed(0)}%
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="25"
-            value={config.errorRate * 100}
-            onChange={(e) =>
-              onConfigChange({
-                ...config,
-                errorRate: parseInt(e.target.value) / 100,
-                eavesdropperPresent: parseInt(e.target.value) > 0,
-              })
             }
             className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
             disabled={isRunning}
@@ -101,7 +80,7 @@ const SimulationControls: React.FC<ISimulationControlsProps> = ({
         <ul className="text-xs text-gray-300 space-y-1">
           <li>{t("simulation.instructions.transmissions")}</li>
           <li>{t("simulation.instructions.finalKey")}</li>
-          <li>{t("simulation.instructions.errorRate")}</li>
+
           <li>{t("simulation.instructions.sameBases")}</li>
           <li>{t("simulation.instructions.differentBases")}</li>
         </ul>

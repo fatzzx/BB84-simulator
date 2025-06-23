@@ -60,7 +60,8 @@ type SimulationAction =
       result: IBB84SimulationResult;
       steps: ISimulationStep[];
     }
-  | { type: "UPDATE_TOTAL_STEPS"; totalSteps: number };
+  | { type: "UPDATE_TOTAL_STEPS"; totalSteps: number }
+  | { type: "SELECT_STEP"; stepIndex: number };
 
 // Reducer para gerenciar estado de forma consistente
 const simulationReducer = (
@@ -100,13 +101,9 @@ const simulationReducer = (
       // Calcula estatísticas
       const totalBits = newSteps.length;
       const matchingBases = newSteps.filter((s) => s.result.basesMatch).length;
-      const errors = newSteps.filter(
-        (s) => s.result.basesMatch && s.alice.bit !== s.bob.bit
-      ).length;
-      const errorRate = matchingBases > 0 ? errors / matchingBases : 0;
       const keyEfficiency = totalBits > 0 ? newSharedKey.length / totalBits : 0;
 
-      // Completa quando atingir o número de transmissões configurado
+      // Completa quando atingir o número de transmissões configurado (não tamanho da chave)
       const isComplete = newSteps.length >= action.keyLength;
 
       return {
@@ -120,7 +117,7 @@ const simulationReducer = (
         statistics: {
           totalBits,
           matchingBases,
-          errorRate,
+          errorRate: 0,
           keyEfficiency,
         },
       };
@@ -138,7 +135,7 @@ const simulationReducer = (
             (_, i: number) =>
               action.result.aliceBases[i] === action.result.bobBases[i]
           ).length,
-          errorRate: action.result.errorRate,
+          errorRate: 0,
           keyEfficiency:
             action.result.sharedKey.length / action.result.aliceBits.length,
         },
@@ -150,15 +147,20 @@ const simulationReducer = (
         steps: action.steps,
         sharedKey: action.result.sharedKey,
         currentStep: action.steps.length,
+        totalSteps: action.steps.length, // Atualiza o total de passos para refletir a simulação completa
         isComplete: true,
         isRunning: false,
+        currentStepData:
+          action.steps.length > 0
+            ? action.steps[action.steps.length - 1]
+            : null, // Define o último passo como atual
         statistics: {
           totalBits: action.result.aliceBits.length,
           matchingBases: action.result.aliceBits.filter(
             (_, i: number) =>
               action.result.aliceBases[i] === action.result.bobBases[i]
           ).length,
-          errorRate: action.result.errorRate,
+          errorRate: 0,
           keyEfficiency:
             action.result.sharedKey.length / action.result.aliceBits.length,
         },
@@ -166,6 +168,15 @@ const simulationReducer = (
 
     case "UPDATE_TOTAL_STEPS":
       return { ...state, totalSteps: action.totalSteps };
+
+    case "SELECT_STEP":
+      if (action.stepIndex >= 0 && action.stepIndex < state.steps.length) {
+        return {
+          ...state,
+          currentStepData: state.steps[action.stepIndex],
+        };
+      }
+      return state;
 
     default:
       return state;
@@ -217,7 +228,7 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
 
   // Executa um passo da simulação
   const executeStep = useCallback(() => {
-    // Evita execução se já completo (baseado no número de transmissões)
+    // Evita execução se já completo (baseado no número de transmissões realizadas)
     if (state.isComplete || state.currentStep >= config.keyLength) {
       dispatch({ type: "STOP_SIMULATION" });
       return;
@@ -244,9 +255,22 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
       !state.isComplete &&
       state.currentStep < config.keyLength
     ) {
-      intervalRef.current = setInterval(() => {
-        executeStep();
-      }, speedRef.current);
+      // Adiciona um delay inicial antes de começar o loop para dar tempo da animação se preparar
+      const initialDelay = state.currentStep === 0 ? speedRef.current : 0;
+
+      const startTimeout = setTimeout(() => {
+        intervalRef.current = setInterval(() => {
+          executeStep();
+        }, speedRef.current);
+      }, initialDelay);
+
+      return () => {
+        clearTimeout(startTimeout);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      };
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -301,6 +325,9 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
       intervalRef.current = null;
     }
 
+    // Reinicia o simulador para garantir uma simulação completa limpa
+    simulatorRef.current = new BB84Simulator(config);
+
     const result = simulatorRef.current.simulate();
 
     // Gera histórico de passos para a simulação completa
@@ -318,6 +345,11 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
     dispatch({ type: "SET_COMPLETE_SIMULATION_DATA", result, steps });
 
     return result;
+  }, [config]);
+
+  // Seleciona um passo específico (para navegação no histórico)
+  const selectStep = useCallback((stepIndex: number) => {
+    dispatch({ type: "SELECT_STEP", stepIndex });
   }, []);
 
   // Retorna o estado atual e as funções de controle
@@ -328,5 +360,6 @@ export const useBB84Simulation = (config: ISimulationConfig) => {
     stopSimulation,
     resetSimulation,
     runCompleteSimulation,
+    selectStep,
   };
 };

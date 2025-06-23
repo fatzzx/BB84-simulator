@@ -9,7 +9,7 @@ interface IStepHistoryProps {
 }
 
 // Constantes para paginação
-const STEPS_PER_PAGE = 20;
+const STEPS_PER_PAGE = 10;
 
 // Componente individual do passo otimizado
 const StepItem = React.memo<{
@@ -127,6 +127,7 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
 }) => {
   const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState(0);
+  const [allowAutoNavigation, setAllowAutoNavigation] = useState(true);
 
   // Calcula paginação com memoização
   const paginationData = useMemo(() => {
@@ -135,7 +136,7 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
     const endIndex = Math.min(startIndex + STEPS_PER_PAGE, steps.length);
     const currentSteps = steps.slice(startIndex, endIndex);
 
-    return {
+    const data = {
       totalPages,
       currentSteps,
       startIndex,
@@ -143,31 +144,90 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
       hasNextPage: currentPage < totalPages - 1,
       hasPrevPage: currentPage > 0,
     };
+
+    console.log(
+      "Pagination - currentPage:",
+      currentPage,
+      "totalPages:",
+      data.totalPages,
+      "hasNext:",
+      data.hasNextPage,
+      "hasPrev:",
+      data.hasPrevPage
+    );
+
+    return data;
   }, [steps, currentPage]);
 
   // Reset da página quando steps é resetado
   React.useEffect(() => {
     if (steps.length === 0) {
       setCurrentPage(0);
+      setAllowAutoNavigation(true); // Permite navegação automática novamente
     }
   }, [steps.length]);
 
   // Navega automaticamente para a última página quando novos passos são adicionados
+  // Mas apenas quando permitido e quando é a primeira vez ou simulação resetada
+  const previousStepsLength = React.useRef(0);
+
   React.useEffect(() => {
-    if (steps.length > 0) {
+    if (
+      steps.length > 0 &&
+      steps.length !== previousStepsLength.current &&
+      allowAutoNavigation
+    ) {
       const lastPage = Math.ceil(steps.length / STEPS_PER_PAGE) - 1;
-      if (currentPage < lastPage) {
+      // Só navega automaticamente se estivermos na última página ou se for a primeira vez
+      if (
+        currentPage ===
+          Math.ceil(previousStepsLength.current / STEPS_PER_PAGE) - 1 ||
+        previousStepsLength.current === 0
+      ) {
         setCurrentPage(lastPage);
       }
+      previousStepsLength.current = steps.length;
     }
-  }, [steps.length, currentPage]);
+  }, [steps.length, allowAutoNavigation]);
 
   const handleFirstPage = () => {
+    console.log("HandleFirstPage clicked - current page:", currentPage);
+    setAllowAutoNavigation(false);
     setCurrentPage(0);
   };
 
+  const handlePreviousPage = () => {
+    console.log(
+      "HandlePreviousPage clicked - current page:",
+      currentPage,
+      "total pages:",
+      paginationData.totalPages
+    );
+    setAllowAutoNavigation(false);
+    const newPage = Math.max(0, currentPage - 1);
+    console.log("Setting new page to:", newPage);
+    setCurrentPage(newPage);
+  };
+
+  const handleNextPage = () => {
+    console.log(
+      "HandleNextPage clicked - current page:",
+      currentPage,
+      "total pages:",
+      paginationData.totalPages
+    );
+    setAllowAutoNavigation(false);
+    const newPage = Math.min(paginationData.totalPages - 1, currentPage + 1);
+    console.log("Setting new page to:", newPage);
+    setCurrentPage(newPage);
+  };
+
   const handleLastPage = () => {
-    setCurrentPage(paginationData.totalPages - 1);
+    console.log("HandleLastPage clicked - current page:", currentPage);
+    setAllowAutoNavigation(false);
+    const newPage = paginationData.totalPages - 1;
+    console.log("Setting new page to:", newPage);
+    setCurrentPage(newPage);
   };
 
   return (
@@ -180,45 +240,49 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
           </h4>
 
           {/* Controles de Paginação */}
-          {paginationData.totalPages > 1 && (
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleFirstPage}
-                disabled={currentPage === 0}
-                className="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
-              >
-                {t("history.first")}
-              </button>
-              <button
-                onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
-                disabled={!paginationData.hasPrevPage}
-                className="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
-              >
-                {t("history.previous")}
-              </button>
-              <span className="text-xs text-gray-400">
-                {currentPage + 1} / {paginationData.totalPages}
-              </span>
-              <button
-                onClick={() =>
-                  setCurrentPage(
-                    Math.min(paginationData.totalPages - 1, currentPage + 1)
-                  )
-                }
-                disabled={!paginationData.hasNextPage}
-                className="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
-              >
-                {t("history.next")}
-              </button>
-              <button
-                onClick={handleLastPage}
-                disabled={currentPage === paginationData.totalPages - 1}
-                className="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
-              >
-                {t("history.last")}
-              </button>
-            </div>
-          )}
+          {steps.length > STEPS_PER_PAGE &&
+            (() => {
+              console.log("Rendering pagination controls - showing buttons");
+              return true;
+            })() && (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleFirstPage}
+                  disabled={currentPage === 0}
+                  className="px-3 py-2 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
+                  title={t("history.first")}
+                >
+                  {t("history.first")}
+                </button>
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={!paginationData.hasPrevPage}
+                  className="px-3 py-2 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
+                  title={t("history.previous")}
+                >
+                  {t("history.previous")}
+                </button>
+                <span className="text-xs text-gray-400">
+                  {currentPage + 1} / {paginationData.totalPages}
+                </span>
+                <button
+                  onClick={handleNextPage}
+                  disabled={!paginationData.hasNextPage}
+                  className="px-3 py-2 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
+                  title={t("history.next")}
+                >
+                  {t("history.next")}
+                </button>
+                <button
+                  onClick={handleLastPage}
+                  disabled={currentPage === paginationData.totalPages - 1}
+                  className="px-3 py-2 text-xs bg-gray-700 text-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 transition-colors"
+                  title={t("history.last")}
+                >
+                  {t("history.last")}
+                </button>
+              </div>
+            )}
         </div>
 
         {/* Lista de passos */}
@@ -235,7 +299,7 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
         </div>
 
         {/* Info de paginação */}
-        {paginationData.totalPages > 1 && (
+        {steps.length > STEPS_PER_PAGE && (
           <div className="text-xs text-gray-400 mt-3 text-center">
             Mostrando {paginationData.startIndex + 1} a{" "}
             {paginationData.endIndex} de {steps.length} passos
