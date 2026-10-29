@@ -24,7 +24,7 @@ const Bob: React.FC<IBobProps> = ({
   photonAngle = 0,
   isActive = false,
   showResult = false,
-  basesMatch = false,
+  basesMatch,
 }) => {
   const { t } = useTranslation();
 

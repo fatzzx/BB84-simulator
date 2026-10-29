@@ -1,4 +1,4 @@
-import { useState, useEffect, useReducer } from "react";
+import { useState, useEffect, useReducer, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import Alice from "@/components/Alice";
 import Bob from "@/components/Bob";
@@ -11,6 +11,7 @@ import { Footer } from "@/components";
 import { useBB84Simulation } from "@/hooks/useBB84Simulation";
 import { ISimulationConfig } from "@/types";
 import { getBitColor, getBasisColor } from "@/utils/visualization";
+import { startTour } from "@/utils/tour";
 
 // Tipos para o gerenciamento de fases
 type AnimationPhase = "preparing" | "transmitting" | "measuring" | "complete";
@@ -18,15 +19,13 @@ type AnimationPhase = "preparing" | "transmitting" | "measuring" | "complete";
 interface AnimationState {
   currentPhase: AnimationPhase;
   photonActive: boolean;
-  isAnimating: boolean;
 }
 
 type AnimationAction =
   | { type: "SET_PHASE"; phase: AnimationPhase }
   | { type: "ACTIVATE_PHOTON" }
   | { type: "DEACTIVATE_PHOTON" }
-  | { type: "RESET_ANIMATION" }
-  | { type: "SET_ANIMATING"; isAnimating: boolean };
+  | { type: "RESET_ANIMATION" };
 
 // Reducer para gerenciar as fases da animação
 const animationReducer = (
@@ -41,20 +40,48 @@ const animationReducer = (
     case "DEACTIVATE_PHOTON":
       return { ...state, photonActive: false };
     case "RESET_ANIMATION":
-      return {
-        currentPhase: "preparing",
-        photonActive: false,
-        isAnimating: false,
-      };
-    case "SET_ANIMATING":
-      return { ...state, isAnimating: action.isAnimating };
+      return { currentPhase: "preparing", photonActive: false };
     default:
       return state;
   }
 };
 
+const TUTORIAL_SEEN_KEY = "bb84-tutorial-seen";
+
+// localStorage pode lançar exceção (modo privado, dados bloqueados)
+const hasSeenTutorial = (): boolean => {
+  try {
+    return localStorage.getItem(TUTORIAL_SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+};
+
+const markTutorialSeen = () => {
+  try {
+    localStorage.setItem(TUTORIAL_SEEN_KEY, "1");
+  } catch {
+    // Sem persistência: o tour volta a abrir na próxima visita
+  }
+};
+
 function App() {
   const { t } = useTranslation();
+
+  // Função que cancela o tour em andamento (se houver)
+  const stopTourRef = useRef<(() => void) | null>(null);
+
+  const launchTour = useCallback(() => {
+    stopTourRef.current?.();
+    stopTourRef.current = startTour(t, markTutorialSeen);
+  }, [t]);
+
+  // Abre o tour na primeira visita. O cleanup cancela o tour sem marcá-lo como
+  // visto (StrictMode monta duas vezes; trocar de idioma reinicia traduzido).
+  useEffect(() => {
+    if (!hasSeenTutorial()) launchTour();
+    return () => stopTourRef.current?.();
+  }, [launchTour]);
 
   const [config, setConfig] = useState<ISimulationConfig>({
     keyLength: 20, // Agora representa número de transmissões
@@ -65,7 +92,6 @@ function App() {
   const [animationState, dispatchAnimation] = useReducer(animationReducer, {
     currentPhase: "preparing",
     photonActive: false,
-    isAnimating: false,
   });
 
   const {
@@ -84,55 +110,50 @@ function App() {
     selectStep,
   } = useBB84Simulation(config);
 
-  // Controla as fases da animação com timing otimizado
+  // Controla as fases da animação com timing otimizado.
+  // Reinicia a cada novo passo (ou quando a simulação é resetada).
+  const currentStepNumber = currentStepData?.step;
+
   useEffect(() => {
-    if (currentStepData && !animationState.isAnimating) {
-      dispatchAnimation({ type: "SET_ANIMATING", isAnimating: true });
+    dispatchAnimation({ type: "RESET_ANIMATION" });
 
-      // Reset inicial
-      dispatchAnimation({ type: "RESET_ANIMATION" });
+    if (currentStepNumber === undefined) return;
 
-      const timeouts: NodeJS.Timeout[] = [];
+    const timeouts: NodeJS.Timeout[] = [];
 
-      // Fase 1: Preparação (200ms)
-      timeouts.push(
-        setTimeout(() => {
-          dispatchAnimation({ type: "SET_PHASE", phase: "preparing" });
-        }, 100)
-      );
+    // Fase 1: Preparação (100ms)
+    timeouts.push(
+      setTimeout(() => {
+        dispatchAnimation({ type: "SET_PHASE", phase: "preparing" });
+      }, 100)
+    );
 
-      // Fase 2: Início da transmissão (400ms)
-      timeouts.push(
-        setTimeout(() => {
-          dispatchAnimation({ type: "SET_PHASE", phase: "transmitting" });
-          dispatchAnimation({ type: "ACTIVATE_PHOTON" });
-        }, 400)
-      );
+    // Fase 2: Início da transmissão (400ms)
+    timeouts.push(
+      setTimeout(() => {
+        dispatchAnimation({ type: "SET_PHASE", phase: "transmitting" });
+        dispatchAnimation({ type: "ACTIVATE_PHOTON" });
+      }, 400)
+    );
 
-      // Fase 3: Fim da transmissão e início da medição
-      const transmissionEndTime = 400 + config.visualizationSpeed + 100;
-      timeouts.push(
-        setTimeout(() => {
-          dispatchAnimation({ type: "DEACTIVATE_PHOTON" });
-          dispatchAnimation({ type: "SET_PHASE", phase: "measuring" });
-        }, transmissionEndTime)
-      );
+    // Fase 3: Fim da transmissão e início da medição
+    const transmissionEndTime = 400 + config.visualizationSpeed + 100;
+    timeouts.push(
+      setTimeout(() => {
+        dispatchAnimation({ type: "DEACTIVATE_PHOTON" });
+        dispatchAnimation({ type: "SET_PHASE", phase: "measuring" });
+      }, transmissionEndTime)
+    );
 
-      // Fase 4: Finalização
-      const completionTime = transmissionEndTime + 600;
-      timeouts.push(
-        setTimeout(() => {
-          dispatchAnimation({ type: "SET_PHASE", phase: "complete" });
-          dispatchAnimation({ type: "SET_ANIMATING", isAnimating: false });
-        }, completionTime)
-      );
+    // Fase 4: Finalização
+    timeouts.push(
+      setTimeout(() => {
+        dispatchAnimation({ type: "SET_PHASE", phase: "complete" });
+      }, transmissionEndTime + 600)
+    );
 
-      return () => {
-        timeouts.forEach(clearTimeout);
-        dispatchAnimation({ type: "SET_ANIMATING", isAnimating: false });
-      };
-    }
-  }, [currentStepData?.step, config.visualizationSpeed]);
+    return () => timeouts.forEach(clearTimeout);
+  }, [currentStepNumber, config.visualizationSpeed]);
 
   const handlePhotonComplete = () => {
     // Callback quando o fóton completa a animação
@@ -140,7 +161,7 @@ function App() {
   };
 
   const handleStepForward = () => {
-    if (!isRunning && !isComplete && !animationState.isAnimating) {
+    if (!isRunning && !isComplete) {
       executeStep();
     }
   };
@@ -161,7 +182,23 @@ function App() {
     <div className="min-h-screen bg-quantum-dark flex flex-col">
       <header className="p-4 text-center bg-quantum-surface/50 backdrop-blur-sm border-b border-quantum-primary/20">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
-          <div className="flex-1"></div>
+          <div className="flex-1 flex justify-start">
+            <button
+              onClick={launchTour}
+              className="flex items-center space-x-2 px-3 py-2 rounded-lg
+                         bg-quantum-surface/50 backdrop-blur-sm
+                         border border-quantum-primary/30
+                         text-quantum-light hover:bg-quantum-surface/70
+                         transition-all duration-300
+                         hover:border-quantum-primary/50
+                         focus:outline-none focus:ring-2 focus:ring-quantum-primary/50"
+            >
+              <span className="text-lg font-bold">?</span>
+              <span className="text-sm font-medium hidden sm:inline">
+                {t("tutorial.open")}
+              </span>
+            </button>
+          </div>
           <div className="flex-1 text-center">
             <h1 className="text-2xl font-bold mb-2 bg-gradient-to-r from-quantum-primary via-quantum-secondary to-quantum-primary bg-clip-text text-transparent">
               {t("app.title")}
@@ -189,37 +226,45 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-4">
           {/* Alice */}
           <div className="flex justify-center">
-            <Alice
-              currentBit={currentStepData?.alice.bit}
-              currentBasis={currentStepData?.alice.basis}
-              polarizationAngle={currentStepData?.alice.angle}
-              isActive={
-                animationState.currentPhase === "preparing" ||
-                animationState.currentPhase === "transmitting"
-              }
-            />
+            <div data-tour="alice">
+              <Alice
+                currentBit={currentStepData?.alice.bit}
+                currentBasis={currentStepData?.alice.basis}
+                polarizationAngle={currentStepData?.alice.angle}
+                isActive={
+                  animationState.currentPhase === "preparing" ||
+                  animationState.currentPhase === "transmitting"
+                }
+              />
+            </div>
           </div>
 
           {/* Canal Quântico + Controles de Execução no Centro */}
-          <div className="relative h-[360px] overflow-hidden flex flex-col items-center justify-center">
-            {/* Fóton animado */}
-            {currentStepData && (
+          <div className="h-[360px] flex flex-col items-center">
+            {/* Canal + fóton animado (o canal é desenhado no meio desta área) */}
+            <div
+              data-tour="channel"
+              className="relative w-full flex-1 overflow-hidden"
+            >
               <Photon
                 isActive={animationState.photonActive}
-                polarizationAngle={currentStepData.photon.polarization}
-                bit={currentStepData.alice.bit}
-                basis={currentStepData.alice.basis}
+                polarizationAngle={currentStepData?.photon.polarization ?? 0}
+                aliceAngle={currentStepData?.alice.angle}
+                eavesdropperPresent={config.eavesdropperPresent}
+                bit={currentStepData?.alice.bit ?? 0}
+                basis={currentStepData?.alice.basis ?? "computational"}
                 onAnimationComplete={handlePhotonComplete}
                 animationDuration={config.visualizationSpeed}
               />
-            )}
+            </div>
 
-            {/* Controles de Execução - Posicionados no centro */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+            {/* Controles de Execução - abaixo do canal, no fluxo normal */}
+            <div className="pb-2">
               <ExecutionControls
                 isRunning={isRunning}
                 isComplete={isComplete}
                 photonActive={animationState.photonActive}
+                hasStarted={currentStepData !== null}
                 onStepForward={handleStepForward}
                 onAutoPlay={handleAutoPlay}
                 onStop={stopSimulation}
@@ -230,22 +275,24 @@ function App() {
 
           {/* Bob */}
           <div className="flex justify-center">
-            <Bob
-              currentBasis={currentStepData?.bob.basis}
-              measuredBit={currentStepData?.bob.bit}
-              measurementAngle={currentStepData?.bob.measurementAngle}
-              photonAngle={currentStepData?.photon.polarization}
-              isActive={
-                animationState.currentPhase === "measuring" ||
-                animationState.currentPhase === "complete"
-              }
-              showResult={
-                currentStepData !== null &&
-                (animationState.currentPhase === "complete" ||
-                  animationState.currentPhase === "measuring")
-              }
-              basesMatch={currentStepData?.result.basesMatch}
-            />
+            <div data-tour="bob">
+              <Bob
+                currentBasis={currentStepData?.bob.basis}
+                measuredBit={currentStepData?.bob.bit}
+                measurementAngle={currentStepData?.bob.measurementAngle}
+                photonAngle={currentStepData?.photon.polarization}
+                isActive={
+                  animationState.currentPhase === "measuring" ||
+                  animationState.currentPhase === "complete"
+                }
+                showResult={
+                  currentStepData !== null &&
+                  (animationState.currentPhase === "complete" ||
+                    animationState.currentPhase === "measuring")
+                }
+                basesMatch={currentStepData?.result.basesMatch}
+              />
+            </div>
           </div>
         </div>
 
@@ -363,7 +410,7 @@ function App() {
 
         {/* Estatísticas */}
         {steps.length > 0 && (
-          <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="quantum-card text-center">
               <div className="text-3xl font-bold text-quantum-primary">
                 {statistics.totalBits}
@@ -388,6 +435,19 @@ function App() {
                 {t("sharedKey.title")}
               </div>
             </div>
+            <div className="quantum-card text-center">
+              <div
+                className="text-3xl font-bold"
+                style={{
+                  color: statistics.errorRate > 0 ? "#ef4444" : "#10b981",
+                }}
+              >
+                {(statistics.errorRate * 100).toFixed(1)}%
+              </div>
+              <div className="text-base text-quantum-light/60">
+                {t("statistics.errorRate")}
+              </div>
+            </div>
           </div>
         )}
 
@@ -402,6 +462,7 @@ function App() {
       </main>
 
       <Footer />
+
     </div>
   );
 }

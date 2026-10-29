@@ -17,7 +17,7 @@ const SimulationControls: React.FC<ISimulationControlsProps> = ({
   const { t } = useTranslation();
 
   return (
-    <div className="quantum-card">
+    <div className="quantum-card" data-tour="settings">
       <h2 className="text-xl font-bold text-quantum-blue mb-3">
         {t("simulation.title")}
       </h2>
@@ -72,19 +72,24 @@ const SimulationControls: React.FC<ISimulationControlsProps> = ({
         </div>
       </div>
 
-      {/* Instruções */}
-      <div className="mt-3 p-3 bg-gray-800/50 rounded-lg">
-        <h4 className="text-sm font-semibold text-quantum-blue mb-2">
-          {t("simulation.howToUse")}
-        </h4>
-        <ul className="text-xs text-gray-300 space-y-1">
-          <li>{t("simulation.instructions.transmissions")}</li>
-          <li>{t("simulation.instructions.finalKey")}</li>
-
-          <li>{t("simulation.instructions.sameBases")}</li>
-          <li>{t("simulation.instructions.differentBases")}</li>
-        </ul>
-      </div>
+      <label
+        data-tour="eve"
+        className={`flex items-center gap-2 text-sm text-gray-300 w-fit ${
+          isRunning ? "opacity-50" : "cursor-pointer"
+        }`}
+        title={t("simulation.eavesdropperHint")}
+      >
+        <input
+          type="checkbox"
+          checked={config.eavesdropperPresent}
+          onChange={(e) =>
+            onConfigChange({ ...config, eavesdropperPresent: e.target.checked })
+          }
+          disabled={isRunning}
+          className="w-4 h-4 accent-quantum-primary"
+        />
+        {t("simulation.eavesdropper")}
+      </label>
     </div>
   );
 };

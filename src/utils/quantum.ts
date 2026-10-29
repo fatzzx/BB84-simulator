@@ -1,13 +1,12 @@
-import { IQuantumState, TMeasurementBasis } from "@/types";
-import { QUANTUM_STATES } from "@/constants/quantum";
+import { TMeasurementBasis } from "@/types";
 
 /**
- * Gera um número aleatório seguro
+ * Gera um número aleatório seguro em [0, 1)
  */
 export function secureRandom(): number {
-  if (window.crypto && window.crypto.getRandomValues) {
+  if (globalThis.crypto?.getRandomValues) {
     const array = new Uint32Array(1);
-    window.crypto.getRandomValues(array);
+    globalThis.crypto.getRandomValues(array);
     return array[0] / (0xffffffff + 1);
   }
   return Math.random();
@@ -25,18 +24,4 @@ export function randomBit(): 0 | 1 {
  */
 export function randomBasis(): TMeasurementBasis {
   return secureRandom() < 0.5 ? "computational" : "hadamard";
-}
-
-/**
- * Prepara um estado quântico baseado no bit e na base
- */
-export function prepareQuantumState(
-  bit: 0 | 1,
-  basis: TMeasurementBasis
-): IQuantumState {
-  if (basis === "computational") {
-    return bit === 0 ? QUANTUM_STATES.ZERO : QUANTUM_STATES.ONE;
-  } else {
-    return bit === 0 ? QUANTUM_STATES.PLUS : QUANTUM_STATES.MINUS;
-  }
 }

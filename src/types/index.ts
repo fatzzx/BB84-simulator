@@ -24,14 +24,30 @@ export interface IQuantumBit {
   bitValue: 0 | 1;
 }
 
-// Resultado da simulação BB84
-export interface IBB84SimulationResult {
-  aliceBits: number[];
-  aliceBases: TMeasurementBasis[];
-  bobBases: TMeasurementBasis[];
-  bobMeasurements: number[];
-  sharedKey: number[];
-  keyLength: number; // Tamanho real da chave resultante após reconciliação das bases
+// Uma transmissão (um fóton) da simulação, usada na visualização passo-a-passo
+export interface ISimulationStep {
+  step: number;
+  alice: {
+    bit: 0 | 1;
+    basis: TMeasurementBasis;
+    angle: number;
+  };
+  bob: {
+    bit: 0 | 1;
+    basis: TMeasurementBasis;
+    angle: number;
+    measurementAngle: number;
+  };
+  photon: {
+    polarization: number;
+    state: IQuantumState;
+  };
+  result: {
+    basesMatch: boolean;
+    bitPreserved: boolean;
+    measurement: 0 | 1;
+    willKeep: boolean;
+  };
 }
 
 // Configurações da simulação
@@ -47,13 +63,4 @@ export interface IQuantumStates {
   ONE: IQuantumState;
   PLUS: IQuantumState;
   MINUS: IQuantumState;
-}
-
-// Operadores quânticos
-export type TQuantumOperator = number[][];
-
-// Resultado de detecção de eavesdropping
-export interface IEavesdropDetection {
-  detected: boolean;
-  threshold: number;
 }

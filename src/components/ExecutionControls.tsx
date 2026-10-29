@@ -4,6 +4,7 @@ interface IExecutionControlsProps {
   isRunning: boolean;
   isComplete: boolean;
   photonActive: boolean;
+  hasStarted: boolean;
   onStepForward: () => void;
   onAutoPlay: () => void;
   onStop: () => void;
@@ -14,6 +15,7 @@ const ExecutionControls: React.FC<IExecutionControlsProps> = ({
   isRunning,
   isComplete,
   photonActive,
+  hasStarted,
   onStepForward,
   onAutoPlay,
   onStop,
@@ -25,6 +27,7 @@ const ExecutionControls: React.FC<IExecutionControlsProps> = ({
     <div className="flex flex-col items-center space-y-2 bg-quantum-surface/50 backdrop-blur-sm rounded-lg p-3 border border-quantum-primary/30 shadow-lg">
       <div className="flex flex-wrap gap-2 justify-center">
         <button
+          data-tour="step"
           onClick={onStepForward}
           disabled={isRunning || isComplete || photonActive}
           className="quantum-button text-sm px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
@@ -34,6 +37,7 @@ const ExecutionControls: React.FC<IExecutionControlsProps> = ({
         </button>
 
         <button
+          data-tour="auto"
           onClick={onAutoPlay}
           disabled={isRunning || isComplete}
           className="quantum-button text-sm px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
@@ -43,6 +47,7 @@ const ExecutionControls: React.FC<IExecutionControlsProps> = ({
         </button>
 
         <button
+          data-tour="pause"
           onClick={onStop}
           disabled={!isRunning}
           className="quantum-button text-sm px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
@@ -52,6 +57,7 @@ const ExecutionControls: React.FC<IExecutionControlsProps> = ({
         </button>
 
         <button
+          data-tour="complete"
           onClick={onRunComplete}
           disabled={isRunning}
           className="quantum-button text-sm px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
@@ -66,7 +72,8 @@ const ExecutionControls: React.FC<IExecutionControlsProps> = ({
         {isRunning && t("status.running")}
         {photonActive && !isRunning && t("status.transmitting")}
         {isComplete && t("status.complete")}
-        {!isRunning && !photonActive && !isComplete && t("status.ready")}
+        {!isRunning && !photonActive && !isComplete && !hasStarted && t("status.firstHint")}
+        {!isRunning && !photonActive && !isComplete && hasStarted && t("status.ready")}
       </div>
     </div>
   );

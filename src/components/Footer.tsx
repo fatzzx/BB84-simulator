@@ -1,6 +1,9 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const Footer: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
     <footer className="
       w-full
@@ -21,7 +24,7 @@ const Footer: React.FC = () => {
         space-y-2
       ">
         <p className="text-center">
-          Desenvolvido por Felipe Spinola Farias
+          {t('footer.developedBy')} Felipe Spinola Farias
         </p>
         <div className="flex space-x-4">
           <a

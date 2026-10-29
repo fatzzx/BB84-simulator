@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ISimulationStep } from "@/hooks/useBB84Simulation";
+import { ISimulationStep } from "@/types";
 
 interface IStepHistoryProps {
   steps: ISimulationStep[];
@@ -141,17 +141,6 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
       hasPrevPage: currentPage > 0,
     };
 
-    // console.log(
-    //   "Pagination - currentPage:",
-    //   currentPage,
-    //   "totalPages:",
-    //   data.totalPages,
-    //   "hasNext:",
-    //   data.hasNextPage,
-    //   "hasPrev:",
-    //   data.hasPrevPage
-    // );
-
     return data;
   }, [steps, currentPage]);
 
@@ -184,45 +173,28 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
       }
       previousStepsLength.current = steps.length;
     }
-  }, [steps.length, allowAutoNavigation]);
+  }, [steps.length, allowAutoNavigation, currentPage]);
 
   const handleFirstPage = () => {
-    // console.log("HandleFirstPage clicked - current page:", currentPage);
     setAllowAutoNavigation(false);
     setCurrentPage(0);
   };
 
   const handlePreviousPage = () => {
-    // console.log(
-    //   "HandlePreviousPage clicked - current page:",
-    //   currentPage,
-    //   "total pages:",
-    //   paginationData.totalPages
-    // );
     setAllowAutoNavigation(false);
     const newPage = Math.max(0, currentPage - 1);
-    // console.log("Setting new page to:", newPage);
     setCurrentPage(newPage);
   };
 
   const handleNextPage = () => {
-    // console.log(
-    //   "HandleNextPage clicked - current page:",
-    //   currentPage,
-    //   "total pages:",
-    //   paginationData.totalPages
-    // );
     setAllowAutoNavigation(false);
     const newPage = Math.min(paginationData.totalPages - 1, currentPage + 1);
-    // console.log("Setting new page to:", newPage);
     setCurrentPage(newPage);
   };
 
   const handleLastPage = () => {
-    // console.log("HandleLastPage clicked - current page:", currentPage);
     setAllowAutoNavigation(false);
     const newPage = paginationData.totalPages - 1;
-    // console.log("Setting new page to:", newPage);
     setCurrentPage(newPage);
   };
 
@@ -293,8 +265,11 @@ const StepHistory: React.FC<IStepHistoryProps> = ({
         {/* Info de paginação */}
         {steps.length > STEPS_PER_PAGE && (
           <div className="text-xs text-gray-400 mt-3 text-center">
-            Mostrando {paginationData.startIndex + 1} a{" "}
-            {paginationData.endIndex} de {steps.length} passos
+            {t("history.showing", {
+              from: paginationData.startIndex + 1,
+              to: paginationData.endIndex,
+              total: steps.length,
+            })}
           </div>
         )}
       </div>

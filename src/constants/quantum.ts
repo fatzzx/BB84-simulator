@@ -1,4 +1,4 @@
-import { IQuantumStates, TQuantumOperator } from "@/types";
+import { IQuantumStates } from "@/types";
 
 // Estados quânticos básicos do protocolo BB84
 export const QUANTUM_STATES: IQuantumStates = {
@@ -28,69 +28,5 @@ export const QUANTUM_STATES: IQuantumStates = {
     amplitude0: Math.sqrt(0.5),
     amplitude1: -Math.sqrt(0.5),
     phase: Math.PI,
-  },
-};
-
-// Operadores quânticos fundamentais
-export const QUANTUM_OPERATORS = {
-  // Porta Hadamard
-  HADAMARD: [
-    [Math.sqrt(0.5), Math.sqrt(0.5)],
-    [Math.sqrt(0.5), -Math.sqrt(0.5)],
-  ] as TQuantumOperator,
-
-  // Matriz identidade
-  IDENTITY: [
-    [1, 0],
-    [0, 1],
-  ] as TQuantumOperator,
-
-  // Porta Pauli-X (NOT quântico)
-  PAULI_X: [
-    [0, 1],
-    [1, 0],
-  ] as TQuantumOperator,
-
-  // Porta Pauli-Z
-  PAULI_Z: [
-    [1, 0],
-    [0, -1],
-  ] as TQuantumOperator,
-};
-
-// Configurações padrão do protocolo BB84
-export const BB84_CONFIG = {
-  DEFAULT_KEY_LENGTH: 100,
-  EAVESDROP_DETECTION_THRESHOLD: 0.11, // ~11% error rate threshold
-  MAX_ERROR_RATE: 0.25, // 25% maximum acceptable error rate
-  MIN_KEY_LENGTH: 10,
-  MAX_KEY_LENGTH: 1000,
-};
-
-// Constantes de visualização
-export const VISUALIZATION = {
-  ANIMATION_DURATION: 1000, // ms
-  QUBIT_COLORS: {
-    ZERO: "#00d4ff",
-    ONE: "#ff6b6b",
-    PLUS: "#00ff88",
-    MINUS: "#ffab00",
-  },
-  BASIS_COLORS: {
-    // Alice - indigo/azul
-    alice: {
-      computational: "#6366f1", // Indigo
-      hadamard: "#3b82f6", // Azul
-    },
-    // Bob - roxo/violeta
-    bob: {
-      computational: "#9d4edd", // Roxo vibrante
-      hadamard: "#c084fc", // Roxo claro
-    },
-  },
-  // Cores antigas mantidas para compatibilidade
-  OLD_BASIS_COLORS: {
-    computational: "#6366f1",
-    hadamard: "#9d4edd",
   },
 };

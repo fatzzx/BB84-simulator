@@ -1,3 +1,17 @@
+// Passos do tour guiado (cada id tem título e texto em tutorial.steps)
+export type TTourStepId =
+  | "intro"
+  | "alice"
+  | "channel"
+  | "bob"
+  | "keys"
+  | "step"
+  | "auto"
+  | "pause"
+  | "complete"
+  | "settings"
+  | "eve";
+
 // Tipos para as traduções - garante type safety
 export interface TranslationResources {
   app: {
@@ -7,17 +21,10 @@ export interface TranslationResources {
   simulation: {
     title: string;
     transmissions: string;
-    errorRate: string;
+    eavesdropper: string;
+    eavesdropperHint: string;
     speed: string;
     reset: string;
-    howToUse: string;
-    instructions: {
-      transmissions: string;
-      finalKey: string;
-      errorRate: string;
-      sameBases: string;
-      differentBases: string;
-    };
   };
   controls: {
     step: string;
@@ -34,6 +41,15 @@ export interface TranslationResources {
     transmitting: string;
     complete: string;
     ready: string;
+    firstHint: string;
+  };
+  tutorial: {
+    open: string;
+    close: string;
+    previous: string;
+    next: string;
+    done: string;
+    steps: Record<TTourStepId, { title: string; body: string }>;
   };
   characters: {
     alice: {
@@ -55,6 +71,10 @@ export interface TranslationResources {
       basesDifferent: string;
       bitIncluded: string;
       bitDiscarded: string;
+    };
+    eve: {
+      name: string;
+      intercepting: string;
     };
   };
   stepInfo: {
@@ -94,6 +114,10 @@ export interface TranslationResources {
     previous: string;
     next: string;
     last: string;
+    showing: string;
+  };
+  footer: {
+    developedBy: string;
   };
   language: {
     toggle: string;
